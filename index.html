@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>一个测试的网站</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui; overflow-x: hidden; background: #000; }
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .video-bg video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: translateZ(0);
+            image-rendering: -webkit-optimize-contrast;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.2), rgba(0,0,0,0.5));
+            z-index: 1;
+            pointer-events: none;
+        }
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+        }
+        .hero { text-align: center; margin-top: 10vh; }
+        .hero h1 {
+            font-size: clamp(2rem, 6vw, 4rem);
+            background: linear-gradient(135deg, #fff, #ccc);
+            background-clip: text;
+            color: transparent;
+        }
+        .hero p { color: rgba(255,255,255,0.8); margin-top: 1rem; }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 8vh;
+            flex-wrap: wrap;
+        }
+        .acrylic-btn {
+            padding: 0.8rem 2rem;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .acrylic-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+        @media (max-width: 640px) {
+            .acrylic-btn { padding: 0.6rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="video-bg">
+    <video id="desktopVideo" muted loop playsinline>
+        <source src="ygsp.mp4" type="video/mp4">
+    </video>
+    <video id="mobileVideo" muted loop playsinline>
+        <source src="Miku.mp4" type="video/mp4">
+    </video>
+</div>
+<div class="overlay"></div>
+<div class="content">
+    <div class="hero">
+        <h1>一个测试网站</h1>
+        <p></p>
+    </div>
+    <div class="btn-group">
+        <button class="acrylic-btn" id="btn1">1</button>
+        <button class="acrylic-btn" id="btn2">2</button>
+        <button class="acrylic-btn" id="btn3">3</button>
+    </div>
+</div>
+<script>
+    const desktop = document.getElementById('desktopVideo');
+    const mobile = document.getElementById('mobileVideo');
+    desktop.muted = true; mobile.muted = true;
+    desktop.loop = true; mobile.loop = true;
+
+    function isMobile() { return /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent); }
+    function isLandscape() { return window.matchMedia("(orientation: landscape)").matches; }
+    function updateVideo() {
+        const useDesktop = !isMobile() || isLandscape();
+        if (useDesktop) {
+            desktop.style.display = 'block';
+            mobile.style.display = 'none';
+            if (desktop.paused) desktop.play().catch(e=>console.log);
+        } else {
+            mobile.style.display = 'block';
+            desktop.style.display = 'none';
+            if (mobile.paused) mobile.play().catch(e=>console.log);
+        }
+    }
+    desktop.style.display = 'block';
+    mobile.style.display = 'none';
+    window.addEventListener('resize', updateVideo);
+    window.addEventListener('orientationchange', () => setTimeout(updateVideo, 30));
+    updateVideo();
+
+    document.getElementById('btn1').onclick = () => alert('这就是个测试的网站');
+    document.getElementById('btn2').onclick = () => alert('真的就是个测试的别看了😡');
+    document.getElementById('btn3').onclick = () => alert('还看！😡😡😡');
+</script>
+</body>
+</html>
