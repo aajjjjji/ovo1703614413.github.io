@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>一个测试的网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=yes">
+    <title>测试网站</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui; overflow-x: hidden; background: #000; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow-x: hidden; background: #000; }
         .video-bg {
             position: fixed;
             top: 0;
@@ -24,6 +24,7 @@
             height: 100%;
             object-fit: cover;
             transform: translateZ(0);
+            will-change: transform;
             image-rendering: -webkit-optimize-contrast;
         }
         .overlay {
@@ -32,7 +33,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0.2), rgba(0,0,0,0.5));
+            background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.15), rgba(0,0,0,0.55));
             z-index: 1;
             pointer-events: none;
         }
@@ -43,90 +44,648 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
         }
         .hero { text-align: center; margin-top: 10vh; }
         .hero h1 {
-            font-size: clamp(2rem, 6vw, 4rem);
-            background: linear-gradient(135deg, #fff, #ccc);
+            font-size: clamp(2.2rem, 7vw, 4.5rem);
+            background: linear-gradient(135deg, #fff, #d0d0ff, #b0b0ff);
             background-clip: text;
+            -webkit-background-clip: text;
             color: transparent;
+            text-shadow: 0 0 20px rgba(100,150,255,0.3);
+            letter-spacing: 2px;
         }
-        .hero p { color: rgba(255,255,255,0.8); margin-top: 1rem; }
+        .hero p { color: rgba(255,255,255,0.85); margin-top: 0.8rem; font-size: 1.1rem; opacity: 0.9; }
         .btn-group {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
+            gap: 1.8rem;
             margin-bottom: 8vh;
             flex-wrap: wrap;
         }
         .acrylic-btn {
-            padding: 0.8rem 2rem;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(12px);
+            padding: 0.9rem 2.4rem;
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
             border-radius: 60px;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+        }
+        .acrylic-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.6);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+        }
+        .acrylic-btn:active { transform: translateY(2px); }
+        @media (max-width: 640px) {
+            .acrylic-btn { padding: 0.7rem 1.6rem; font-size: 1rem; }
+            .content { padding: 1.5rem 1rem; }
+        }
+
+        /* 模态框通用样式 (亚克力质感) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-card {
+            background: rgba(18, 25, 45, 0.8);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border-radius: 2.5rem;
+            padding: 1.8rem 1.8rem 1.5rem;
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid rgba(210, 230, 255, 0.3);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(120, 180, 255, 0.1) inset;
+            color: white;
+            text-align: center;
+            animation: fadeUp 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-card::-webkit-scrollbar { width: 5px; }
+        .modal-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+        
+        .modal-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #ffffff, #b8d0ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+        
+        /*  iframe容器 */
+        .iframe-wrapper {
+            background: #0b1018;
+            border-radius: 24px;
+            padding: 6px;
+            border: 1px solid rgba(210, 230, 255, 0.15);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 8px 20px rgba(0,0,0,0.3);
+            margin: 20px 0 15px;
+            flex: 1;
+            min-height: 380px;
+            display: flex;
+        }
+        .web-iframe {
+            width: 100%;
+            border: none;
+            border-radius: 18px;
+            background: #ffffff;
+            display: block;
+            min-height: 380px;
+            height: 60vh;
+            max-height: 650px;
+        }
+        
+        /* QQ名片视频区域 (原图片区域改为视频) */
+        .qq-photo-wrapper {
+            background: rgba(0,0,0,0.5);
+            border-radius: 28px;
+            padding: 12px;
+            margin: 20px 0 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .qq-card-video {
+            width: 100%;
+            max-width: 560px;
+            max-height: 65vh;
+            object-fit: contain;      /* 保持视频比例，完整显示 */
+            border-radius: 24px;
+            display: block;
+            margin: 0 auto;
+            background: #0a0e18;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+        }
+        .qq-card-video:hover {
+            transform: scale(1.01);
+        }
+        .modal-buttons-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 10px 0 8px;
+            flex-wrap: wrap;
+        }
+        .action-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.7rem 1.8rem;
+            border-radius: 60px;
             color: white;
             font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .acrylic-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
-        @media (max-width: 640px) {
-            .acrylic-btn { padding: 0.6rem 1.2rem; }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.28);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.6);
+        }
+        .close-modal-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.7rem 2.2rem;
+            border-radius: 60px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+            width: fit-content;
+            margin: 5px auto 0;
+        }
+        .close-modal-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.97);
+            border-color: rgba(255,255,255,0.6);
+        }
+        .status-bar {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin: 8px 0 12px;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+            padding-top: 12px;
+            display: flex;
+            justify-content: center;
+        }
+        .fixed-url-hint {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin: 5px 0 0;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            .modal-card { padding: 1.2rem 1rem; max-width: 96%; }
+            .web-iframe { height: 55vh; }
+            .qq-card-video { max-height: 50vh; }
+            .action-btn { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+        }
+
+        /* 背景提示条样式 */
+        #bgHint {
+            position: fixed;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 10;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(6px);
+            width: fit-content;
+            margin: 0 auto;
+            padding: 4px 14px;
+            border-radius: 60px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
 <body>
 <div class="video-bg">
     <video id="desktopVideo" muted loop playsinline>
-        <source src="ygsp.mp4" type="video/mp4">
+        <source src="电脑默认.mp4" type="video/mp4">
     </video>
     <video id="mobileVideo" muted loop playsinline>
-        <source src="Miku.mp4" type="video/mp4">
+        <source src="手机默认.mp4" type="video/mp4">
     </video>
 </div>
 <div class="overlay"></div>
+
 <div class="content">
     <div class="hero">
         <h1>一个测试网站</h1>
         <p></p>
     </div>
     <div class="btn-group">
-        <button class="acrylic-btn" id="btn1">1</button>
-        <button class="acrylic-btn" id="btn2">2</button>
-        <button class="acrylic-btn" id="btn3">3</button>
+        <button class="acrylic-btn" id="btn1">一个QQ群</button>
+        <button class="acrylic-btn" id="btn2">测试</button>
+        <button class="acrylic-btn" id="btn3">QQ名片</button>
     </div>
 </div>
-<script>
-    const desktop = document.getElementById('desktopVideo');
-    const mobile = document.getElementById('mobileVideo');
-    desktop.muted = true; mobile.muted = true;
-    desktop.loop = true; mobile.loop = true;
 
-    function isMobile() { return /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent); }
-    function isLandscape() { return window.matchMedia("(orientation: landscape)").matches; }
-    function updateVideo() {
-        const useDesktop = !isMobile() || isLandscape();
-        if (useDesktop) {
-            desktop.style.display = 'block';
-            mobile.style.display = 'none';
-            if (desktop.paused) desktop.play().catch(e=>console.log);
-        } else {
-            mobile.style.display = 'block';
-            desktop.style.display = 'none';
-            if (mobile.paused) mobile.play().catch(e=>console.log);
+<!-- 模拟框 (iframe) -->
+<div id="previewModal" class="modal">
+    <div class="modal-card">
+        <h3>不知道写啥</h3>
+        <div class="fixed-url-hint" id="fixedUrlDisplay">加载中...</div>
+        <div class="iframe-wrapper">
+            <iframe id="fixedIframe" class="web-iframe" 
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"
+                allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy">
+            </iframe>
+        </div>
+        <div class="status-bar">
+            <span id="loadStatus"></span>
+        </div>
+        <button class="close-modal-btn" id="closePreviewBtn">关 闭</button>
+    </div>
+</div>
+
+<!-- QQ名片模态框 (图片或视频名字建议改成QQ名片） -->
+<div id="qqModal" class="modal">
+    <div class="modal-card">
+        <h3> QQ 名 片 </h3>
+        <div class="qq-photo-wrapper">
+            <video id="qqCardVideo" class="qq-card-video" 
+                   autoplay muted loop playsinline preload="auto"
+                   poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1e2a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23888' font-size='14'%3E🎬 加载中%3C/text%3E%3C/svg%3E"
+                   title="QQ名片视频 · 动态展示">
+                <source src="QQ名片.mp4" type="video/mp4">
+                您的浏览器不支持视频播放，请升级浏览器。
+            </video>
+        </div>
+        <div class="fixed-url-hint" style="margin-top: -5px; margin-bottom: 10px;">
+             有什么事情可以联系我
+        </div>
+        <div class="modal-buttons-group">
+            <button id="openQQHomeBtn" class="action-btn">🐧 跳转QQ主页</button>
+            <button id="closeQQModalBtn" class="action-btn">关 闭</button>
+        </div>
+        <div class="status-bar" style="border-top-color: rgba(255,255,255,0.1); margin-top: 5px;">
+            <span>📖 本人还是个学生，时间不算多</span>
+        </div>
+    </div>
+</div>
+
+
+<script>
+(function() {
+    "use strict";
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initBgPatch);
+    } else {
+        initBgPatch();
+    }
+
+    function initBgPatch() {
+        const desktopVideo = document.getElementById('desktopVideo');
+        const mobileVideo = document.getElementById('mobileVideo');
+        if (!desktopVideo || !mobileVideo) return;
+
+        const desktopVideos = [
+            '电脑默认.mp4',
+            '电脑第二个.mp4',
+            '电脑第三个.mp4',
+            '电脑第四个.mp4',
+            '电脑第五个.mp4',
+            '电脑第六个.mp4',
+            '电脑第七个.mp4'
+        ];
+        const mobileVideos = [
+            '手机默认.mp4',
+         
+        ];
+
+        let desktopIndex = 0;
+        let mobileIndex = 0;
+
+        const btnGroup = document.querySelector('.btn-group');
+        if (btnGroup && !document.getElementById('changeBgBtn')) {
+            const newBtn = document.createElement('button');
+            newBtn.className = 'acrylic-btn';
+            newBtn.id = 'changeBgBtn';
+            newBtn.textContent = '换背景';
+            newBtn.title = '点击切换背景视频';
+            btnGroup.appendChild(newBtn);
+        }
+
+        let hintEl = document.getElementById('bgHint');
+        if (!hintEl) {
+            hintEl = document.createElement('div');
+            hintEl.id = 'bgHint';
+            document.body.appendChild(hintEl);
+        }
+
+        function getActiveType() {
+            return (desktopVideo.style.display !== 'none') ? 'desktop' : 'mobile';
+        }
+
+        function getActiveVideo() {
+            return getActiveType() === 'desktop' ? desktopVideo : mobileVideo;
+        }
+
+        function updateHint() {
+            if (!hintEl) return;
+            const type = getActiveType();
+            const list = type === 'desktop' ? desktopVideos : mobileVideos;
+            const idx = type === 'desktop' ? desktopIndex : mobileIndex;
+            let fileName = (list[idx] || '未知').split('/').pop();
+            if (fileName.length > 25) fileName = fileName.slice(0, 20) + '…';
+            hintEl.textContent = `(✿^‿^) ${type === 'desktop' ? '桌面背景' : '手机背景'} · ${fileName}`;
+        }
+
+        function switchBackground() {
+            const type = getActiveType();
+            const videoEl = getActiveVideo();
+            const videoList = type === 'desktop' ? desktopVideos : mobileVideos;
+            let currentIndex = type === 'desktop' ? desktopIndex : mobileIndex;
+            if (videoList.length <= 1) {
+                hintEl.textContent = '⚠️ 现在只有一个背景，无法切换';
+                return;
+            }
+            const nextIndex = (currentIndex + 1) % videoList.length;
+            const nextSrc = videoList[nextIndex];
+            if (type === 'desktop') {
+                desktopIndex = nextIndex;
+            } else {
+                mobileIndex = nextIndex;
+            }
+            videoEl.src = nextSrc;
+            videoEl.load();
+            videoEl.play().catch(e => console.warn('背景播放失败', e));
+            updateHint();
+        }
+
+        const changeBtn = document.getElementById('changeBgBtn');
+        if (changeBtn) changeBtn.addEventListener('click', switchBackground);
+
+        window.addEventListener('resize', () => setTimeout(updateHint, 30));
+        window.addEventListener('orientationchange', () => setTimeout(updateHint, 50));
+        setTimeout(updateHint, 100);
+
+        const content = document.querySelector('.content');
+        if (content) {
+            content.style.display = 'flex';
+            content.style.flexDirection = 'column';
+            content.style.justifyContent = 'space-between';
         }
     }
-    desktop.style.display = 'block';
-    mobile.style.display = 'none';
-    window.addEventListener('resize', updateVideo);
-    window.addEventListener('orientationchange', () => setTimeout(updateVideo, 30));
-    updateVideo();
+})();
+</script>
 
-    document.getElementById('btn1').onclick = () => alert('这就是个测试的网站');
-    document.getElementById('btn2').onclick = () => alert('真的就是个测试的别看了😡');
-    document.getElementById('btn3').onclick = () => alert('还看！😡😡😡');
+<script>
+(function() {
+    "use strict";
+    const desktop = document.getElementById('desktopVideo');
+    const mobile = document.getElementById('mobileVideo');
+    if (desktop && mobile) {
+        desktop.muted = true; mobile.muted = true;
+        desktop.loop = true; mobile.loop = true;
+        function isMobile() { return /iPhone|iPad|Android|Mobile|iPod/i.test(navigator.userAgent); }
+        function isLandscape() { return window.matchMedia("(orientation: landscape)").matches; }
+        function updateVideo() {
+            const useDesktop = !isMobile() || isLandscape();
+            if (useDesktop) {
+                desktop.style.display = 'block';
+                mobile.style.display = 'none';
+                if (desktop.paused) desktop.play().catch(e=>console.log("desktop autoplay blocked"));
+            } else {
+                mobile.style.display = 'block';
+                desktop.style.display = 'none';
+                if (mobile.paused) mobile.play().catch(e=>console.log("mobile autoplay blocked"));
+            }
+        }
+        desktop.style.display = 'block';
+        mobile.style.display = 'none';
+        window.addEventListener('resize', updateVideo);
+        window.addEventListener('orientationchange', () => setTimeout(updateVideo, 30));
+        updateVideo();
+    }
+
+    
+    const FIXED_URL = 'http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=qMVmo-rScCmCFUMF63u3wsCE17pLveZM&authKey=ao7pS6jou5BfYN9wXVPLmd0UOyiHuueGQenP5eSNbeLUEkP%2BoeiWvc%2BeCKwHOUaY&noverify=0&group_code=974672942';
+    
+    
+    const serverModal = document.getElementById('previewModal');
+    const qqModal = document.getElementById('qqModal');
+    const fixedIframe = document.getElementById('fixedIframe');
+    const fixedUrlDisplay = document.getElementById('fixedUrlDisplay');
+    const loadStatus = document.getElementById('loadStatus');
+    const closePreviewBtn = document.getElementById('closePreviewBtn');
+    
+    // QQ名片视频元素 (video)
+    const qqCardVideo = document.getElementById('qqCardVideo');
+    const openQQHomeBtn = document.getElementById('openQQHomeBtn');
+    const closeQQModalBtn = document.getElementById('closeQQModalBtn');
+    
+  
+    const DEFAULT_QQ_VIDEO_URL = 'QQ名片.mp4';
+    let currentVideoSrc = DEFAULT_QQ_VIDEO_URL;
+    
+    
+    function closeAllModals() {
+        if (serverModal) serverModal.style.display = 'none';
+        if (qqModal) qqModal.style.display = 'none';
+        if (qqCardVideo && !qqCardVideo.paused) {
+            qqCardVideo.pause();
+        }
+    }
+    
+    
+    function loadFixedPage() {
+        if (!fixedUrlDisplay) return;
+        fixedUrlDisplay.textContent = '留空的文字位';
+        if (loadStatus) loadStatus.textContent = '正在加载数据...';
+        const startTime = Date.now();
+        if (fixedIframe) {
+            fixedIframe.src = FIXED_URL;
+            fixedIframe.onload = () => {
+                const duration = Date.now() - startTime;
+                if (loadStatus) loadStatus.textContent = `页面加载完成 (${duration}ms)`;
+            };
+            fixedIframe.onerror = () => {
+                if (loadStatus) loadStatus.textContent = '⚠️ 无法加载该页面，请检查网络';
+            };
+        }
+    }
+    
+    function openServerModal() {
+        closeAllModals();
+        if (serverModal) {
+            serverModal.style.display = 'flex';
+            loadFixedPage();
+        }
+    }
+    
+    function closeServerModal() {
+        if (serverModal) serverModal.style.display = 'none';
+    }
+    
+   
+    function setupVideoSource() {
+        if (!qqCardVideo) return;
+        if (qqCardVideo.querySelector('source') && qqCardVideo.querySelector('source').src !== currentVideoSrc) {
+            const sourceEl = qqCardVideo.querySelector('source');
+            sourceEl.src = currentVideoSrc;
+            qqCardVideo.load();  
+        } else if (!qqCardVideo.querySelector('source') && qqCardVideo.src !== currentVideoSrc) {
+    
+            qqCardVideo.src = currentVideoSrc;
+            qqCardVideo.load();
+        }
+    }
+    
+ 
+    function openQQModal() {
+        closeAllModals();
+        if (qqModal) {
+            qqModal.style.display = 'flex';
+            setupVideoSource();
+            if (qqCardVideo) {
+                qqCardVideo.play().catch(e => {
+                    console.warn("视频自动播放被阻止，可能需要用户交互:", e);
+                });
+            }
+        }
+    }
+    
+    function closeQQModal() {
+        if (qqModal) {
+            qqModal.style.display = 'none';
+            if (qqCardVideo) {
+                qqCardVideo.pause();
+            }
+        }
+    }
+    
+   
+    const QQ_HOME_URL = 'https://qm.qq.com/q/POMQp4DwCC';   // 可修改为任意QQ主页或联系方式
+    function jumpToQQHome() {
+        window.open(QQ_HOME_URL, '_blank', 'noopener,noreferrer');
+    }
+    
+    window.updateQQCardVideo = function(newVideoUrl) {
+        if (newVideoUrl && typeof newVideoUrl === 'string') {
+            currentVideoSrc = newVideoUrl;
+            if (qqCardVideo) {
+                const sourceEl = qqCardVideo.querySelector('source');
+                if (sourceEl) {
+                    sourceEl.src = currentVideoSrc;
+                    qqCardVideo.load();
+                } else {
+                    qqCardVideo.src = currentVideoSrc;
+                    qqCardVideo.load();
+                }
+                if (qqModal && qqModal.style.display === 'flex') {
+                    qqCardVideo.play().catch(e => console.log("播放新视频", e));
+                }
+                console.log(' QQ名片视频已换:', newVideoUrl);
+            }
+        } else {
+            console.warn('请提供有效的视频URL');
+        }
+    };
+    
+    // 修改跳转QQ主页链接
+    window.updateQQHomeLink = function(newUrl) {
+        if (newUrl && typeof newUrl === 'string') {
+            window.QQ_HOME_URL = newUrl;
+            console.log(' QQ主页跳转链接已更新:', newUrl);
+        } else {
+            console.warn('链接无效');
+        }
+    };
+    
+    
+    const btn1 = document.getElementById('btn1');
+    const btn2 = document.getElementById('btn2');
+    const btn3 = document.getElementById('btn3');
+    
+    if (btn1) btn1.addEventListener('click', openServerModal);
+    if (btn2) btn2.addEventListener('click', () => { alert('真的就是个测试的别看了😡'); });
+    if (btn3) btn3.addEventListener('click', openQQModal);
+    
+    
+    if (closePreviewBtn) closePreviewBtn.addEventListener('click', closeServerModal);
+    if (closeQQModalBtn) closeQQModalBtn.addEventListener('click', closeQQModal);
+    if (openQQHomeBtn) openQQHomeBtn.addEventListener('click', jumpToQQHome);
+    
+    
+    if (serverModal) {
+        serverModal.addEventListener('click', (e) => {
+            if (e.target === serverModal) closeServerModal();
+        });
+    }
+    if (qqModal) {
+        qqModal.addEventListener('click', (e) => {
+            if (e.target === qqModal) closeQQModal();
+        });
+    }
+    
+    
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (serverModal && serverModal.style.display === 'flex') closeServerModal();
+            if (qqModal && qqModal.style.display === 'flex') closeQQModal();
+        }
+    });
+    
+    
+    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+        try {
+            const link = document.createElement('link');
+            link.rel = 'preconnect';
+            link.href = new URL(FIXED_URL).origin;
+            document.head.appendChild(link);
+        } catch(e) {}
+    }
+    
+    
+    if (qqCardVideo) {
+        qqCardVideo.addEventListener('error', (e) => {
+            console.warn('QQ名片加载失败，请检查网络: ', currentVideoSrc);
+            const statusSpan = document.querySelector('#qqModal .status-bar span');
+            if (statusSpan && !statusSpan.innerText.includes('视频加载失败')) {
+                statusSpan.innerText = '⚠️ 视频加载失败，请前往开发者QQ咨询';
+            }
+        });
+        qqCardVideo.addEventListener('loadeddata', () => {
+            const statusSpan = document.querySelector('#qqModal .status-bar span');
+            if (statusSpan && statusSpan.innerText.includes('加载失败')) {
+                statusSpan.innerText = '📖 本人还是个学生，时间不算多';
+            }
+        });
+    }
+    
+    
+    setupVideoSource();
+    console.log('站点已加载 | QQ名片支持视频播放，使用 video 标签 | 可调用 updateQQCardVideo("新视频.mp4") 动态更换');
+})();
 </script>
 </body>
 </html>
