@@ -91,7 +91,6 @@
             .content { padding: 1.5rem 1rem; }
         }
 
-        
         .modal {
             display: none;
             position: fixed;
@@ -141,7 +140,6 @@
             font-weight: 600;
         }
         
-        /*  iframe容器 */
         .iframe-wrapper {
             background: #0b1018;
             border-radius: 24px;
@@ -164,7 +162,6 @@
             max-height: 650px;
         }
         
-        
         .qq-photo-wrapper {
             background: rgba(0,0,0,0.5);
             border-radius: 28px;
@@ -180,7 +177,7 @@
             width: 100%;
             max-width: 560px;
             max-height: 65vh;
-            object-fit: contain;      
+            object-fit: contain;
             border-radius: 24px;
             display: block;
             margin: 0 auto;
@@ -188,9 +185,7 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             transition: transform 0.2s ease;
         }
-        .qq-card-video:hover {
-            transform: scale(1.01);
-        }
+        .qq-card-video:hover { transform: scale(1.01); }
         .modal-buttons-group {
             display: flex;
             justify-content: center;
@@ -262,7 +257,6 @@
             .action-btn { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
         }
 
-        
         #bgHint {
             position: fixed;
             bottom: 12px;
@@ -301,13 +295,13 @@
         <p></p>
     </div>
     <div class="btn-group">
-        <button class="acrylic-btn" id="btn1">一个QQ群</button>
+        <button class="acrylic-btn" id="btn1">交流群</button>
         <button class="acrylic-btn" id="btn2">测试</button>
         <button class="acrylic-btn" id="btn3">QQ名片</button>
     </div>
 </div>
 
-<!-- 模拟框 (iframe) -->
+
 <div id="previewModal" class="modal">
     <div class="modal-card">
         <h3>不知道写啥</h3>
@@ -326,7 +320,7 @@
     </div>
 </div>
 
-<!-- QQ名片模态框 (图片或视频名字建议改成QQ名片） -->
+
 <div id="qqModal" class="modal">
     <div class="modal-card">
         <h3> QQ 名 片 </h3>
@@ -335,7 +329,7 @@
                    autoplay muted loop playsinline preload="auto"
                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1e2a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23888' font-size='14'%3E🎬 加载中%3C/text%3E%3C/svg%3E"
                    title="QQ名片视频">
-                <source src="QQ名片" type="video/mp4">
+                <source src="QQ名片.mp4" type="video/mp4">
                 您的浏览器不支持视频播放，请升级浏览器。
             </video>
         </div>
@@ -351,7 +345,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
 (function() {
@@ -374,14 +367,13 @@
             '电脑第四个',
             '电脑第五个',
             '电脑第六个',
-            '电脑第七个'
+            '电脑第七个',
+            '电脑第八个',
+            '电脑第九个'
         ];
         const mobileVideos = [
             '手机默认',
-            '手机第二个',
-            '手机第三个',
-            '手机第四个',
-         
+            '留空的请你再按一次'
         ];
 
         let desktopIndex = 0;
@@ -428,7 +420,7 @@
             const videoList = type === 'desktop' ? desktopVideos : mobileVideos;
             let currentIndex = type === 'desktop' ? desktopIndex : mobileIndex;
             if (videoList.length <= 1) {
-                hintEl.textContent = '⚠️ 现在只有一个背景，无法切换';
+                hintEl.textContent = '⚠️ 可能加载不到其他视频，无法切换';
                 return;
             }
             const nextIndex = (currentIndex + 1) % videoList.length;
@@ -490,9 +482,7 @@
         updateVideo();
     }
 
-    
-    const FIXED_URL = 'http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=qMVmo-rScCmCFUMF63u3wsCE17pLveZM&authKey=ao7pS6jou5BfYN9wXVPLmd0UOyiHuueGQenP5eSNbeLUEkP%2BoeiWvc%2BeCKwHOUaY&noverify=0&group_code=974672942';
-    
+    const FIXED_URL = 'https://qm.qq.com/q/R2nvpINxe2';
     
     const serverModal = document.getElementById('previewModal');
     const qqModal = document.getElementById('qqModal');
@@ -501,15 +491,12 @@
     const loadStatus = document.getElementById('loadStatus');
     const closePreviewBtn = document.getElementById('closePreviewBtn');
     
-    // QQ名片视频元素 (video)
     const qqCardVideo = document.getElementById('qqCardVideo');
     const openQQHomeBtn = document.getElementById('openQQHomeBtn');
     const closeQQModalBtn = document.getElementById('closeQQModalBtn');
     
-  
     const DEFAULT_QQ_VIDEO_URL = 'QQ名片.mp4';
     let currentVideoSrc = DEFAULT_QQ_VIDEO_URL;
-    
     
     function closeAllModals() {
         if (serverModal) serverModal.style.display = 'none';
@@ -518,7 +505,6 @@
             qqCardVideo.pause();
         }
     }
-    
     
     function loadFixedPage() {
         if (!fixedUrlDisplay) return;
@@ -549,21 +535,18 @@
         if (serverModal) serverModal.style.display = 'none';
     }
     
-   
     function setupVideoSource() {
         if (!qqCardVideo) return;
         if (qqCardVideo.querySelector('source') && qqCardVideo.querySelector('source').src !== currentVideoSrc) {
             const sourceEl = qqCardVideo.querySelector('source');
             sourceEl.src = currentVideoSrc;
-            qqCardVideo.load();  
+            qqCardVideo.load();
         } else if (!qqCardVideo.querySelector('source') && qqCardVideo.src !== currentVideoSrc) {
-    
             qqCardVideo.src = currentVideoSrc;
             qqCardVideo.load();
         }
     }
     
- 
     function openQQModal() {
         closeAllModals();
         if (qqModal) {
@@ -586,8 +569,7 @@
         }
     }
     
-   
-    const QQ_HOME_URL = 'https://qm.qq.com/q/POMQp4DwCC';   // 可修改为任意QQ主页或联系方式
+    const QQ_HOME_URL = 'https://qm.qq.com/q/POMQp4DwCC';
     function jumpToQQHome() {
         window.open(QQ_HOME_URL, '_blank', 'noopener,noreferrer');
     }
@@ -607,23 +589,15 @@
                 if (qqModal && qqModal.style.display === 'flex') {
                     qqCardVideo.play().catch(e => console.log("播放新视频", e));
                 }
-                console.log(' QQ名片视频已换:', newVideoUrl);
             }
-        } else {
-            console.warn('请提供有效的视频URL');
         }
     };
     
-    // 修改跳转QQ主页链接
     window.updateQQHomeLink = function(newUrl) {
         if (newUrl && typeof newUrl === 'string') {
             window.QQ_HOME_URL = newUrl;
-            console.log(' QQ主页跳转链接已更新:', newUrl);
-        } else {
-            console.warn('链接无效');
         }
     };
-    
     
     const btn1 = document.getElementById('btn1');
     const btn2 = document.getElementById('btn2');
@@ -633,11 +607,9 @@
     if (btn2) btn2.addEventListener('click', () => { alert('真的就是个测试的别看了😡'); });
     if (btn3) btn3.addEventListener('click', openQQModal);
     
-    
     if (closePreviewBtn) closePreviewBtn.addEventListener('click', closeServerModal);
     if (closeQQModalBtn) closeQQModalBtn.addEventListener('click', closeQQModal);
     if (openQQHomeBtn) openQQHomeBtn.addEventListener('click', jumpToQQHome);
-    
     
     if (serverModal) {
         serverModal.addEventListener('click', (e) => {
@@ -650,7 +622,6 @@
         });
     }
     
-    
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (serverModal && serverModal.style.display === 'flex') closeServerModal();
@@ -658,20 +629,8 @@
         }
     });
     
-    
-    if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
-        try {
-            const link = document.createElement('link');
-            link.rel = 'preconnect';
-            link.href = new URL(FIXED_URL).origin;
-            document.head.appendChild(link);
-        } catch(e) {}
-    }
-    
-    
     if (qqCardVideo) {
         qqCardVideo.addEventListener('error', (e) => {
-            console.warn('QQ名片加载失败，请检查网络: ', currentVideoSrc);
             const statusSpan = document.querySelector('#qqModal .status-bar span');
             if (statusSpan && !statusSpan.innerText.includes('视频加载失败')) {
                 statusSpan.innerText = '⚠️ 视频加载失败，请前往开发者QQ咨询';
@@ -685,10 +644,724 @@
         });
     }
     
-    
     setupVideoSource();
-    console.log('站点已加载 | QQ名片支持视频播放，使用 video 标签 | 可调用 updateQQCardVideo("新视频.mp4") 动态更换');
 })();
 </script>
+
+
+<script>
+(function(){
+    "use strict";
+    const OTHER_BG_DESKTOP = [
+        '电脑18+',
+        '电脑18+第二个',
+        '电脑18+第三个',
+        '电脑18+第四个',
+        '电脑18+第五个',
+        //'电脑18+第六个',
+        //'电脑18+第七个',
+        //'电脑18+第八个',
+        //'电脑18+第九个',
+        //'电脑18+第十个',
+    ];
+    const OTHER_BG_MOBILE = [
+        '手机18+',
+        '手机18+第二个',
+        '手机18+第三个',
+    ];
+
+    const desktopVideo = document.getElementById('desktopVideo');
+    const mobileVideo = document.getElementById('mobileVideo');
+    const hintEl = document.getElementById('bgHint');
+
+    function getActiveVideo() {
+        if (!desktopVideo || !mobileVideo) return null;
+        return (desktopVideo.style.display !== 'none') ? desktopVideo : mobileVideo;
+    }
+    function getActiveType() {
+        if (!desktopVideo || !mobileVideo) return 'desktop';
+        return (desktopVideo.style.display !== 'none') ? 'desktop' : 'mobile';
+    }
+    function updateHintText(customName) {
+        if (!hintEl) return;
+        const type = getActiveType();
+        const typeName = type === 'desktop' ? '桌面背景' : '手机背景';
+        let displayName = customName;
+        if (!displayName) {
+            const video = getActiveVideo();
+            if (video) {
+                let src = video.src || '';
+                let fileName = src.split('/').pop() || '未知';
+                if (fileName.length > 25) fileName = fileName.slice(0,20)+'…';
+                displayName = fileName;
+            } else displayName = '背景';
+        }
+        hintEl.textContent = `(✿^‿^) ${typeName} · ${displayName}`;
+    }
+    function safePlay(video) { if(video) video.play().catch(e=>{}); }
+
+    const style = document.createElement('style');
+    style.textContent = `
+        #settingsToggleBtn {
+            position: fixed; top: 18px; right: 18px; z-index: 9999;
+            width: 48px; height: 48px; border-radius: 30px;
+            background: rgba(20,30,50,0.35); backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.3); color: white; font-size: 26px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3); transition: all 0.2s;
+        }
+        #settingsToggleBtn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+        #settingsPanel {
+            position: fixed; top: 80px; right: 20px; z-index: 10000; width: 300px;
+            max-width: calc(100vw - 30px); background: rgba(12,20,35,0.8);
+            backdrop-filter: blur(28px) saturate(200%); -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border-radius: 28px; padding: 20px 18px; border: 1px solid rgba(210,230,255,0.25);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); color: white; display: none;
+            flex-direction: column; gap: 18px; font-size: 0.95rem;
+        }
+        #settingsPanel.show { display: flex; }
+        .settings-title { display: flex; justify-content: space-between; font-weight: 600; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 8px; }
+        .settings-close { cursor: pointer; font-size: 24px; opacity: 0.8; }
+        .setting-item { display: flex; align-items: center; justify-content: space-between; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .2s; border-radius: 34px; border: 1px solid rgba(255,255,255,0.25); }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%; }
+        input:checked + .slider { background-color: #5f9eff; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .url-input-area { display: flex; flex-direction: column; gap: 8px; }
+        .url-input-area input { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 40px; padding: 10px 16px; color: white; outline: none; backdrop-filter: blur(4px); }
+        .panel-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 40px; padding: 8px 16px; color: white; font-weight: 500; cursor: pointer; backdrop-filter: blur(8px); transition: 0.15s; }
+        .panel-btn:hover { background: rgba(255,255,255,0.28); }
+        .panel-btn.small { padding: 6px 12px; font-size: 0.85rem; }
+        .other-bg-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    `;
+    document.head.appendChild(style);
+
+    const gearBtn = document.createElement('div');
+    gearBtn.id = 'settingsToggleBtn';
+    gearBtn.innerHTML = '⚙️';
+    document.body.appendChild(gearBtn);
+
+    const panel = document.createElement('div');
+    panel.id = 'settingsPanel';
+    panel.innerHTML = `
+        <div class="settings-title"><span>背景设置</span><span class="settings-close" id="closeSettingsPanel">✕</span></div>
+        <div class="setting-item"><label for="otherBgToggle">开启🔞背景</label><label class="switch"><input type="checkbox" id="otherBgToggle"><span class="slider"></span></label></div>
+        <div class="other-bg-buttons"><button class="panel-btn small" id="nextOtherBgBtn" disabled>切换18+背景</button><span style="flex:1; font-size:0.75rem; opacity:0.7;">(开启默认你已18岁了喵～)     视频来源于他人发我如果侵权请联系我删除</span></div>
+        <div class="setting-item"><label for="musicToggle">背景音乐</label><label class="switch"><input type="checkbox" id="musicToggle"><span class="slider"></span></label></div>
+        <div class="url-input-area">
+            <input type="text" id="videoUrlInput" placeholder="粘贴视频链接 (mp4直链)">
+            <button class="panel-btn" id="applyUrlBgBtn">链接设为背景</button>
+        </div>
+        <div style="display:flex; justify-content:flex-end;"><button class="panel-btn small" id="refreshHintBtn">刷新提示</button></div>
+    `;
+    document.body.appendChild(panel);
+
+    const otherBgToggle = document.getElementById('otherBgToggle');
+    const nextOtherBgBtn = document.getElementById('nextOtherBgBtn');
+    const musicToggle = document.getElementById('musicToggle');
+    const videoUrlInput = document.getElementById('videoUrlInput');
+    const applyUrlBgBtn = document.getElementById('applyUrlBgBtn');
+    const closePanelBtn = document.getElementById('closeSettingsPanel');
+    const refreshHintBtn = document.getElementById('refreshHintBtn');
+
+    let desktopOtherIndex = 0, mobileOtherIndex = 0;
+
+    function switchToOtherBackground() {
+        if (!otherBgToggle.checked) { alert('请先开启“其他背景”'); return; }
+        const type = getActiveType(); const videoEl = getActiveVideo();
+        if (!videoEl) return;
+        const otherList = type==='desktop'? OTHER_BG_DESKTOP : OTHER_BG_MOBILE;
+        if (!otherList.length) return;
+        let idx = type==='desktop'? desktopOtherIndex : mobileOtherIndex;
+        const nextSrc = otherList[idx % otherList.length];
+        videoEl.src = nextSrc; videoEl.load(); safePlay(videoEl);
+        if(type==='desktop') desktopOtherIndex = (desktopOtherIndex+1)%otherList.length;
+        else mobileOtherIndex = (mobileOtherIndex+1)%otherList.length;
+        updateHintText(nextSrc.split('/').pop());
+    }
+    function toggleOtherBgButtonState() { nextOtherBgBtn.disabled = !otherBgToggle.checked; }
+    function applyMusicToggle() {
+        const video = getActiveVideo(); if(video) video.muted = !musicToggle.checked;
+    }
+    function applyUrlBackground() {
+        const url = videoUrlInput.value.trim(); if(!url) return;
+        const video = getActiveVideo(); if(video) { video.src = url; video.load(); safePlay(video); updateHintText(url.split('/').pop()); videoUrlInput.value = ''; }
+    }
+    function refreshHint() { const v=getActiveVideo(); if(v) { let n=v.src.split('/').pop()||'背景'; updateHintText(n); } }
+
+    gearBtn.addEventListener('click', (e)=>{ e.stopPropagation(); panel.classList.toggle('show'); });
+    closePanelBtn.addEventListener('click', ()=>panel.classList.remove('show'));
+    document.addEventListener('click', (e)=>{ if(!panel.contains(e.target) && e.target!==gearBtn) panel.classList.remove('show'); });
+    otherBgToggle.addEventListener('change', toggleOtherBgButtonState);
+    toggleOtherBgButtonState();
+    nextOtherBgBtn.addEventListener('click', switchToOtherBackground);
+    musicToggle.addEventListener('change', applyMusicToggle);
+    applyUrlBgBtn.addEventListener('click', applyUrlBackground);
+    refreshHintBtn.addEventListener('click', refreshHint);
+    window.addEventListener('resize', ()=>setTimeout(refreshHint,60));
+    setTimeout(refreshHint,150);
+})();
+</script>
+
+
+
+<script>
+(function() {
+    "use strict";
+
+    function initStableBiliParser() {
+        const settingsPanel = document.getElementById('settingsPanel');
+        if (!settingsPanel) {
+            setTimeout(initStableBiliParser, 100);
+            return;
+        }
+
+        
+        if (document.getElementById('stableParseSection')) return;
+
+        
+        const parseSection = document.createElement('div');
+        parseSection.id = 'stableParseSection';
+        parseSection.style.cssText = `
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        `;
+        parseSection.innerHTML = `
+            <div style="font-weight:500; margin-bottom:12px;">B站解析成背景</div>
+            <div class="url-input-area">
+                <input type="text" id="stableBiliInput" placeholder="输入 AV号 或 BV号">
+                <button class="panel-btn" id="stableParseBtn" style="margin-top:8px;width:100%; background:rgba(100,180,255,0.2);">
+                   设为背景
+                </button>
+                <div id="stableParseStatus" style="font-size:0.75rem; margin-top:6px; opacity:0.8; text-align:center;"></div>
+            </div>
+        `;
+        settingsPanel.appendChild(parseSection);
+
+      
+        const input = document.getElementById('stableBiliInput');
+        const parseBtn = document.getElementById('stableParseBtn');
+        const statusDiv = document.getElementById('stableParseStatus');
+
+      
+        function getActiveVideo() {
+            const desktop = document.getElementById('desktopVideo');
+            const mobile = document.getElementById('mobileVideo');
+            if (!desktop || !mobile) return desktop || mobile;
+            return (desktop.style.display !== 'none') ? desktop : mobile;
+        }
+
+      
+        function updateHint(text) {
+            const hint = document.getElementById('bgHint');
+            if (hint) hint.textContent = `🎬 ${text}`;
+        }
+
+    
+        function extractId(text) {
+            text = text.trim();
+            
+            let match = text.match(/av(\d+)/i);
+            if (match) return { type: 'av', id: match[1] };
+         
+            match = text.match(/BV([a-zA-Z0-9]{10})/);
+            if (match) return { type: 'bv', id: match[1] };
+           
+            try {
+                const url = new URL(text);
+                if (url.hostname.includes('bilibili.com')) {
+                    const pathParts = url.pathname.split('/');
+                    for (let part of pathParts) {
+                        if (part.startsWith('BV') && part.length === 12) {
+                            return { type: 'bv', id: part };
+                        }
+                        if (part.startsWith('av')) {
+                            const avMatch = part.match(/av(\d+)/i);
+                            if (avMatch) return { type: 'av', id: avMatch[1] };
+                        }
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // 调用 injahow API 解析视频
+        async function parseVideo(idObj) {
+            const apiUrl = `https://api.injahow.cn/bparse/?${idObj.type}=${idObj.id}&p=1&q=80&otype=url`;
+            statusDiv.textContent = '正在解析视频...';
+            statusDiv.style.color = '#aaccff';
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const text = await response.text();
+                // API 直接返回视频 URL 字符串
+                const videoUrl = text.trim();
+                
+                if (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) {
+                    statusDiv.textContent = '✅ 解析成功！正在应用...';
+                    statusDiv.style.color = '#8eff8e';
+                    return videoUrl;
+                } else {
+                    throw new Error('返回内容不是有效链接');
+                }
+            } catch (error) {
+                console.error('解析失败:', error);
+                statusDiv.textContent = '❌ 解析失败，请检查 ID 或稍后重试';
+                statusDiv.style.color = '#ff8a8a';
+                return null;
+            }
+        }
+
+        // 应用视频直链到背景
+        function applyVideoUrl(url) {
+            const video = getActiveVideo();
+            if (!video) {
+                alert('未找到背景视频元素');
+                return;
+            }
+
+            // 隐藏 B 站 iframe (如果正在使用)
+            const biliIframe = document.getElementById('biliBackgroundIframe') || document.getElementById('biliPlayerIframe');
+            if (biliIframe) biliIframe.style.display = 'none';
+
+            // 关闭可能存在的 B 站开关
+            const toggle = document.getElementById('biliToggle') || document.getElementById('biliIframeToggle');
+            if (toggle) toggle.checked = false;
+
+            // 确保原有视频可见
+            const desktop = document.getElementById('desktopVideo');
+            const mobile = document.getElementById('mobileVideo');
+            if (desktop && mobile) {
+                const isMobile = /iPhone|iPad|Android|Mobile|iPod/i.test(navigator.userAgent);
+                const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+                const useDesktop = !isMobile || isLandscape;
+                desktop.style.display = useDesktop ? 'block' : 'none';
+                mobile.style.display = useDesktop ? 'none' : 'block';
+            }
+
+            // 设置视频源
+            video.src = url;
+            video.load();
+            video.play().catch(e => {
+                console.warn('自动播放被阻止，点击页面任意位置即可播放');
+            });
+
+            // 提取文件名用于显示
+            const fileName = url.split('/').pop().split('?')[0] || 'B站视频';
+            updateHint(`B站直链 · ${fileName}`);
+            statusDiv.textContent = `已应用！${fileName}`;
+        }
+
+        // 解析按钮点击事件
+        parseBtn.addEventListener('click', async function() {
+            const inputText = input.value.trim();
+            if (!inputText) {
+                alert('请输入 AV 号、BV 号');
+                return;
+            }
+
+            const idObj = extractId(inputText);
+            if (!idObj) {
+                alert('❌ 无法识别有效的 B 站视频 ID\n支持格式：av123456 或 BV1xx2xx3xx4xx');
+                return;
+            }
+
+           
+            parseBtn.disabled = true;
+            parseBtn.textContent = '解析中...';
+
+            const videoUrl = await parseVideo(idObj);
+            
+            if (videoUrl) {
+                applyVideoUrl(videoUrl);
+                input.value = ''; // 清空输入
+            }
+
+            parseBtn.disabled = false;
+            parseBtn.textContent = '设为背景';
+        });
+
+        // 支持回车键触发解析
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                parseBtn.click();
+            }
+        });
+
+        console.log('稳定版 B 站解析器已加载 (基于 injahow API)');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initStableBiliParser);
+    } else {
+        initStableBiliParser();
+    }
+})();
+</script>
+
+
+
+
+<style>
+    /* 滑动验证弹窗样式 */
+    #captchaModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    .captcha-card {
+        width: 320px;
+        max-width: 90vw;
+        background: rgba(20, 30, 50, 0.85);
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border-radius: 32px;
+        padding: 24px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        color: white;
+        text-align: center;
+    }
+    .captcha-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+    }
+    .captcha-desc {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-bottom: 20px;
+    }
+    .slider-container {
+        position: relative;
+        width: 100%;
+        height: 48px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .slider-track {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #5f9eff, #7ab8ff);
+        border-radius: 40px;
+        transition: width 0.05s linear;
+    }
+    .slider-thumb {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+        z-index: 10;
+        border: 2px solid rgba(95, 158, 255, 0.5);
+        transition: left 0.05s linear;
+    }
+    .slider-thumb:active {
+        cursor: grabbing;
+        background: #f0f0ff;
+    }
+    .slider-text {
+        position: absolute;
+        left: 0;
+        right: 0;
+        line-height: 48px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 5;
+    }
+    .captcha-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    .captcha-btn {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 40px;
+        padding: 8px 20px;
+        color: white;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .captcha-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+    .captcha-success {
+        color: #8eff8e;
+        font-weight: 500;
+        margin-top: 10px;
+        display: none;
+    }
+</style>
+
+<div id="captchaModal">
+    <div class="captcha-card">
+        <div class="captcha-title">滑过去确认你17+</div>
+        <div class="captcha-desc">向右滑动滑块完成验证</div>
+        <div class="slider-container" id="sliderContainer">
+            <div class="slider-track" id="sliderTrack"></div>
+            <div class="slider-text" id="sliderText">拖动滑块到最右侧</div>
+            <div class="slider-thumb" id="sliderThumb">→</div>
+        </div>
+        <div class="captcha-success" id="captchaSuccess">✅ 验证通过！</div>
+        <div class="captcha-footer">
+            <button class="captcha-btn" id="captchaCancelBtn">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+
+    function initCaptcha() {
+        const otherBgToggle = document.getElementById('otherBgToggle');
+        if (!otherBgToggle) {
+            setTimeout(initCaptcha, 100);
+            return;
+        }
+
+        const modal = document.getElementById('captchaModal');
+        const sliderContainer = document.getElementById('sliderContainer');
+        const sliderThumb = document.getElementById('sliderThumb');
+        const sliderTrack = document.getElementById('sliderTrack');
+        const sliderText = document.getElementById('sliderText');
+        const successMsg = document.getElementById('captchaSuccess');
+        const cancelBtn = document.getElementById('captchaCancelBtn');
+
+        let isDragging = false;
+        let startX = 0;
+        let startLeft = 0;
+        let maxLeft = 0;
+        let verified = false;
+        let pendingToggle = null;
+
+        
+        function getMaxLeft() {
+            if (!sliderContainer || !sliderThumb) return 0;
+            const containerWidth = sliderContainer.clientWidth;
+            const thumbWidth = sliderThumb.offsetWidth;
+            
+            return Math.max(0, containerWidth - thumbWidth);
+        }
+
+        function resetCaptcha() {
+            verified = false;
+            if (sliderThumb) {
+                sliderThumb.style.transition = '';
+                sliderThumb.style.left = '0px';
+            }
+            if (sliderTrack) {
+                sliderTrack.style.transition = '';
+                sliderTrack.style.width = '0%';
+            }
+            if (sliderText) {
+                sliderText.textContent = '拖动滑块到最右侧';
+                sliderText.style.color = 'rgba(255, 255, 255, 0.7)';
+            }
+            if (successMsg) successMsg.style.display = 'none';
+            isDragging = false;
+        }
+
+        function showCaptcha() {
+            maxLeft = getMaxLeft();
+            resetCaptcha();
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideCaptcha() {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            if (!verified && pendingToggle) {
+                otherBgToggle.checked = false;
+                const nextBtn = document.getElementById('nextOtherBgBtn');
+                if (nextBtn) nextBtn.disabled = true;
+            }
+            pendingToggle = null;
+        }
+
+        function onVerifySuccess() {
+            verified = true;
+            sliderText.textContent = '验证通过！';
+            sliderText.style.color = '#8eff8e';
+            successMsg.style.display = 'block';
+            
+            otherBgToggle.checked = true;
+            const nextBtn = document.getElementById('nextOtherBgBtn');
+            if (nextBtn) nextBtn.disabled = false;
+            
+            setTimeout(() => {
+                hideCaptcha();
+            }, 500);
+        }
+
+   
+        function checkIfReachedEnd(currentLeft) {
+            return (maxLeft - currentLeft) <= 0.5;
+        }
+
+        
+        function handleStart(e) {
+            e.preventDefault();
+            if (verified) return;
+            
+           
+            maxLeft = getMaxLeft();
+            
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            startX = clientX;
+            startLeft = parseFloat(sliderThumb.style.left) || 0;
+            
+            sliderThumb.style.transition = 'none';
+            sliderTrack.style.transition = 'none';
+        }
+
+        function handleMove(e) {
+            if (!isDragging || verified) return;
+            e.preventDefault();
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const deltaX = clientX - startX;
+            let newLeft = startLeft + deltaX;
+            
+            // 边界限制
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            
+            sliderThumb.style.left = newLeft + 'px';
+            const percent = (newLeft / maxLeft) * 100;
+            sliderTrack.style.width = percent + '%';
+            
+          
+            if (checkIfReachedEnd(newLeft)) {
+                
+                isDragging = false;
+                sliderThumb.style.transition = 'left 0.2s';
+                sliderTrack.style.transition = 'width 0.2s';
+                sliderThumb.style.left = maxLeft + 'px';
+                sliderTrack.style.width = '100%';
+                onVerifySuccess();
+            }
+        }
+
+        function handleEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            if (!verified) {
+                
+                sliderThumb.style.transition = 'left 0.3s ease';
+                sliderTrack.style.transition = 'width 0.3s ease';
+                sliderThumb.style.left = '0px';
+                sliderTrack.style.width = '0%';
+            }
+        }
+
+       
+        sliderThumb.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        
+        sliderThumb.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('touchend', handleEnd);
+        
+        window.addEventListener('resize', () => {
+            if (modal.style.display === 'flex') {
+                maxLeft = getMaxLeft();
+              
+            }
+        });
+
+        
+        otherBgToggle.addEventListener('change', function(e) {
+            if (this.checked && !verified) {
+                e.stopPropagation();
+                e.preventDefault();
+                this.checked = false;
+                const nextBtn = document.getElementById('nextOtherBgBtn');
+                if (nextBtn) nextBtn.disabled = true;
+                pendingToggle = true;
+                showCaptcha();
+            }
+        }, true);
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'checked') {
+                    if (otherBgToggle.checked && !verified) {
+                        otherBgToggle.checked = false;
+                        const nextBtn = document.getElementById('nextOtherBgBtn');
+                        if (nextBtn) nextBtn.disabled = true;
+                        pendingToggle = true;
+                        showCaptcha();
+                    }
+                }
+            });
+        });
+        observer.observe(otherBgToggle, { attributes: true });
+
+        cancelBtn.addEventListener('click', hideCaptcha);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideCaptcha();
+        });
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') hideCaptcha();
+        });
+
+        const nextOtherBtn = document.getElementById('nextOtherBgBtn');
+        if (nextOtherBtn) {
+            nextOtherBtn.disabled = !otherBgToggle.checked;
+        }
+
+        console.log('验证17+的');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCaptcha);
+    } else {
+        initCaptcha();
+    }
+})();
+</script>
+
+
+
 </body>
 </html>
