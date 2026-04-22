@@ -619,23 +619,7 @@
         }
     }
     
-    // 在 fetchPixivImages 的 Pixiv 部分后面添加
-try {
-    console.log('📡 尝试 Unsplash API...');
-    const accessKey = 'YOUR_UNSPLASH_ACCESS_KEY'; // 需要注册获取
-    let url = `https://api.unsplash.com/photos/random?count=${count}&client_id=${accessKey}`;
-    if (keyword) url += `&query=${encodeURIComponent(keyword)}`;
     
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (Array.isArray(data) && data.length > 0) {
-        const urls = data.map(item => item.urls.regular);
-        return { urls, source: 'Unsplash', isFallback: false };
-    }
-} catch (e) {
-    console.warn('Unsplash 失败:', e.message);
-}
     
     try {
         console.log('📡 尝试直连 API...');
@@ -930,26 +914,66 @@ try {
            
 
         applyBtn.addEventListener('click', function() {
-    if (fetchedUrls[selectedIndex] && pixivBgImage) {
-       
-        if (desktopVideo) desktopVideo.style.display = 'none';
-        if (mobileVideo) mobileVideo.style.display = 'none';
+    if (!fetchedUrls[selectedIndex]) return;
+
+    // 隐藏视频层，显示图片层
+    if (desktopVideo) desktopVideo.style.display = 'none';
+    if (mobileVideo) mobileVideo.style.display = 'none';
+
+    const originalUrl = fetchedUrls[selectedIndex];
+    
+    // 备用反代列表（按稳定性排序，可自行增删）
+    const proxyList = [
+        'i.pixiv.re',
+        'pixiv.pics',
+        'i.pixiv.cat',
+        'pixiv.re'
+    ];
+    
+    let proxyIndex = 0;
+    let loadAttempt = 0;
+    const maxAttempts = proxyList.length;
+
+    pixivBgImage.style.display = 'block';
+    statusDiv.innerHTML = '⏳ 正在加载图片...';
+
+    function tryNextProxy() {
+        if (proxyIndex >= maxAttempts) {
+            // 所有反代都失败，恢复视频背景并提示
+            statusDiv.innerHTML = '❌ 所有反代均失败，请检查网络或稍后重试';
+            restoreVideo();
+            return;
+        }
+
+        const proxy = proxyList[proxyIndex];
+        const proxyUrl = originalUrl.replace(/\/\/[^\/]+/, '//' + proxy);
         
-      
-        const selectedUrl = fetchedUrls[selectedIndex];
-        const corsProxy = 'https://corsproxy.io/?';
-        pixivBgImage.src = corsProxy + encodeURIComponent(selectedUrl);
-        pixivBgImage.crossOrigin = 'anonymous';
-        pixivBgImage.style.display = 'block';
-        
-        pixivBgImage.onerror = () => {
-         
-            pixivBgImage.src = selectedUrl;
+   
+        const timeoutId = setTimeout(() => {
+            console.warn(`反代 ${proxy} 超时`);
+            proxyIndex++;
+            tryNextProxy();
+        }, 8000); // 8秒超时
+
+        pixivBgImage.onload = () => {
+            clearTimeout(timeoutId);
+            statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景 (通过 ${proxy})`;
+            pixivBgImage.onerror = null; // 清除错误处理
         };
-        
-        statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景`;
-    }
-});
+
+        pixivBgImage.onerror = () => {
+            clearTimeout(timeoutId);
+            console.warn(`反代 ${proxy} 加载失败`);
+            proxyIndex++;
+            tryNextProxy();
+        };
+   
+             pixivBgImage.src = proxyUrl;
+          }    
+
+              tryNextProxy();
+       });
+
     }
 
     
