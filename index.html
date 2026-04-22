@@ -579,38 +579,66 @@
     const keyword = tags || '';
     const r18Param = r18 ? '1' : '0';
     
-    // 尝试从 Pixiv API 获取
-    try {
-        console.log('📡 请求 Pixiv API...');
-        const corsProxy = 'https://corsproxy.io/?';
-        let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
-        
-        if (keyword) {
-            apiUrl += `&tag=${encodeURIComponent(keyword)}`;
+    
+    const CORS_PROXIES = [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://thingproxy.freeboard.io/fetch/'
+    ];
+    
+    
+    for (const proxy of CORS_PROXIES) {
+        try {
+            console.log(`📡 尝试代理: ${proxy}`);
+            let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
+            
+            if (keyword) {
+                apiUrl += `&tag=${encodeURIComponent(keyword)}`;
+            }
+            
+            const response = await fetch(proxy + encodeURIComponent(apiUrl));
+            
+            if (!response.ok) continue;
+            
+            const data = await response.json();
+            
+            if (data.data && data.data.length > 0) {
+                const urls = data.data.map(item => {
+                    return item.urls.original || item.urls.regular;
+                });
+                console.log(`✅ Pixiv 获取成功: ${urls.length} 张`);
+                return { 
+                    urls: urls,
+                    source: 'Pixiv',
+                    isFallback: false 
+                };
+            }
+        } catch (e) {
+            console.warn(`❌ 代理 ${proxy} 失败:`, e.message);
         }
+    }
+    
+    
+    try {
+        console.log('📡 尝试直连 API...');
+        let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
+        if (keyword) apiUrl += `&tag=${encodeURIComponent(keyword)}`;
         
-        const response = await fetch(corsProxy + encodeURIComponent(apiUrl));
+        const response = await fetch(apiUrl);
         const data = await response.json();
         
         if (data.data && data.data.length > 0) {
-            const urls = data.data.map(item => {
-                // 优先使用原图，没有则用常规图
-                return item.urls.original || item.urls.regular;
-            });
-            console.log(`✅ Pixiv 获取成功: ${urls.length} 张`);
-            return { 
-                urls: urls,
-                source: 'Pixiv',
-                isFallback: false 
-            };
+            const urls = data.data.map(item => item.urls.original || item.urls.regular);
+            console.log(`✅ 直连成功: ${urls.length} 张`);
+            return { urls, source: 'Pixiv', isFallback: false };
         }
     } catch (e) {
-        console.warn('❌ Pixiv API 失败:', e.message);
+        console.warn('❌ 直连失败:', e.message);
     }
     
-    // Pixiv 失败时，使用 images.js 中的备用图片
+   
+    console.log('📂 使用备用图库');
     if (typeof IMAGE_LIST !== 'undefined' && IMAGE_LIST.length > 0) {
-        console.log(`📂 使用备用图库: ${IMAGE_LIST.length} 张`);
         const shuffled = [...IMAGE_LIST].sort(() => Math.random() - 0.5);
         return { 
             urls: shuffled.slice(0, count),
@@ -620,16 +648,15 @@
     }
     
     // 最终保底
-    console.log('⚠️ 使用硬编码保底图片');
     return { 
         urls: [
-            '手机默认',
-            '电脑默认'
+            'https://picsum.photos/id/104/1920/1080',
+            'https://picsum.photos/id/106/1920/1080'
         ].slice(0, count),
         source: '默认图库',
         isFallback: true 
-    };
-}
+           };
+     }
 
     function waitForSecretSection(callback, maxAttempts = 50) {
         let attempts = 0;
@@ -893,38 +920,4 @@
       
         const selectedUrl = fetchedUrls[selectedIndex];
         const corsProxy = 'https://corsproxy.io/?';
-        pixivBgImage.src = corsProxy + encodeURIComponent(selectedUrl);
-        pixivBgImage.crossOrigin = 'anonymous';
-        pixivBgImage.style.display = 'block';
-        
-        pixivBgImage.onerror = () => {
-         
-            pixivBgImage.src = selectedUrl;
-        };
-        
-        statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景`;
-    }
-});
-    }
-
-    
-    waitForSecretSection((secretSection) => {
-        injectPixivUI(secretSection);
-        
-        
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach(mut => {
-                if (mut.target.classList && mut.target.classList.contains('visible')) {
-                    injectPixivUI(secretSection);
-                }
-            });
-        });
-        observer.observe(secretSection, { attributes: true, attributeFilter: ['class'] });
-    });
-
-})();
-</script>
-
-
-</body>
-</html>
+        pixivBgImage.src = corsProxy + encodeURIComponent(selec
