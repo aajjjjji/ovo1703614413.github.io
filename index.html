@@ -555,14 +555,16 @@
 (function() {
     "use strict";
 
-    // 镜像列表
+   
     const MIRRORS = [
-        { name: 'pixiv.pics', domain: 'pixiv.pics' },
-        { name: 'i.pixiv.re', domain: 'i.pixiv.re' }
+        { name: 'vilipix.com', domain: 'vilipix.com' },
+        { name: 'pixiviz.xyz', domain: 'pixiviz.xyz' },
+        { name: 'pixivel.moe', domain: 'pixivel.moe' },
+        { name: 'pixivic.com', domain: 'pixivic.com' }
     ];
     let currentMirror = MIRRORS[0];
 
-
+    
     function waitForSecretSection(callback, maxAttempts = 50) {
         let attempts = 0;
         function check() {
@@ -573,13 +575,13 @@
                 attempts++;
                 setTimeout(check, 200);
             } else {
-                console.warn('Pixiv模块：未找到彩蛋区域 #lightSecretSection，请确保抽屉已加载');
+                console.warn('Pixiv模块：未找到彩蛋区域 #lightSecretSection');
             }
         }
         check();
     }
 
-   
+    // 转换 URL 到指定镜像域名（直接替换 hostname）
     function applyMirror(url, mirrorDomain) {
         if (!url) return url;
         try {
@@ -601,7 +603,7 @@
 
         container.innerHTML = `
             <div class="light-item">
-                <span>（可能有点小bug第一次做）Pixiv 背景</span>
+                <span>Pixiv 背景</span>
                 <label class="light-switch">
                     <input type="checkbox" id="pixivToggle">
                     <span class="light-slider"></span>
@@ -620,11 +622,13 @@
                     <input class="light-input" id="pixivCount" type="number" min="1" max="10" value="1" style="width:80px; margin:0;">
                     <span style="color:#ccc; font-size:0.8rem;">数量 1-10</span>
                 </div>
-                <div style="margin-bottom:8px;">
-                    <span style="color:#ccc; font-size:0.8rem; margin-right:6px;">镜像:</span>
-                    <button class="light-btn small" id="mirrorBtn1" style="margin-right:6px;">pixiv.pics</button>
-                    <button class="light-btn small" id="mirrorBtn2">i.pixiv.re</button>
-                    <span id="currentMirrorLabel" style="margin-left:8px; color:#5f9eff; font-size:0.8rem;">pixiv.pics</span>
+                <div style="margin-bottom:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                    <span style="color:#ccc; font-size:0.8rem;">镜像:</span>
+                    <button class="light-btn small mirror-btn" data-mirror="0">vilipix.com</button>
+                    <button class="light-btn small mirror-btn" data-mirror="1">pixiviz.xyz</button>
+                    <button class="light-btn small mirror-btn" data-mirror="2">pixivel.moe</button>
+                    <button class="light-btn small mirror-btn" data-mirror="3">pixivic.com</button>
+                    <span id="currentMirrorLabel" style="margin-left:6px; color:#5f9eff; font-size:0.8rem;">vilipix.com</span>
                 </div>
                 <button class="light-btn" id="pixivFetchBtn" style="width:100%; margin-bottom:8px;">🎲 获取图片</button>
                 <div id="pixivPreview" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:10px 0;"></div>
@@ -637,7 +641,6 @@
         initPixivLogic();
     }
 
-    // 逻辑初始化
     function initPixivLogic() {
         const toggle = document.getElementById('pixivToggle');
         const panel = document.getElementById('pixivPanel');
@@ -648,11 +651,10 @@
         const applyBtn = document.getElementById('pixivApplyBtn');
         const previewDiv = document.getElementById('pixivPreview');
         const statusDiv = document.getElementById('pixivStatus');
-        const mirrorBtn1 = document.getElementById('mirrorBtn1');
-        const mirrorBtn2 = document.getElementById('mirrorBtn2');
         const mirrorLabel = document.getElementById('currentMirrorLabel');
+        const mirrorBtns = document.querySelectorAll('.mirror-btn');
 
-        // 背景图片
+        
         let pixivBgImage = null;
         const videoBgContainer = document.querySelector('.video-bg');
         if (videoBgContainer) {
@@ -673,6 +675,7 @@
         let currentPreviewUrls = [];
         let selectedUrl = '';
 
+        
         function switchMirror(mirror) {
             currentMirror = mirror;
             mirrorLabel.textContent = mirror.name;
@@ -687,6 +690,16 @@
                 applyBtn.disabled = !selectedUrl;
             }
         }
+
+        
+        mirrorBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.mirror);
+                if (!isNaN(idx) && MIRRORS[idx]) {
+                    switchMirror(MIRRORS[idx]);
+                }
+            });
+        });
 
         function renderPreviews(urls) {
             previewDiv.innerHTML = '';
@@ -781,13 +794,10 @@
                 pixivBgImage.src = selectedUrl;
                 pixivBgImage.style.display = 'block';
                 const hint = document.getElementById('bgHint');
-                if (hint) hint.textContent = ` Pixiv · ${selectedUrl.split('/').pop()}`;
+                if (hint) hint.textContent = `Pixiv · ${selectedUrl.split('/').pop()}`;
                 statusDiv.textContent = '✅ 已设为背景';
             }
         });
-
-        mirrorBtn1.addEventListener('click', () => switchMirror(MIRRORS[0]));
-        mirrorBtn2.addEventListener('click', () => switchMirror(MIRRORS[1]));
 
         window.addEventListener('resize', () => {
             if (toggle.checked && pixivBgImage && pixivBgImage.style.display === 'block') {
@@ -797,13 +807,12 @@
         });
     }
 
-   
+    // 启动
     waitForSecretSection((secretSection) => {
         injectPixivUI(secretSection);
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mut => {
                 if (mut.target.classList.contains('visible')) {
-     
                     injectPixivUI(secretSection);
                 }
             });
