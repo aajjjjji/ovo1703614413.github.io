@@ -587,6 +587,7 @@
     ];
     
     
+    
     for (const proxy of CORS_PROXIES) {
         try {
             console.log(`📡 尝试代理: ${proxy}`);
@@ -618,6 +619,23 @@
         }
     }
     
+    // 在 fetchPixivImages 的 Pixiv 部分后面添加
+try {
+    console.log('📡 尝试 Unsplash API...');
+    const accessKey = 'YOUR_UNSPLASH_ACCESS_KEY'; // 需要注册获取
+    let url = `https://api.unsplash.com/photos/random?count=${count}&client_id=${accessKey}`;
+    if (keyword) url += `&query=${encodeURIComponent(keyword)}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (Array.isArray(data) && data.length > 0) {
+        const urls = data.map(item => item.urls.regular);
+        return { urls, source: 'Unsplash', isFallback: false };
+    }
+} catch (e) {
+    console.warn('Unsplash 失败:', e.message);
+}
     
     try {
         console.log('📡 尝试直连 API...');
@@ -695,7 +713,7 @@
                         <span class="light-slider"></span>
                     </label>
                 </div>
-                <input class="light-input" id="pixivTags" placeholder="标签 (如：少女、风景、初音)" style="margin-bottom:8px;">
+                <input class="light-input" id="pixivTags" placeholder="可能没效果因为第一次弄这个" style="margin-bottom:8px;">
                 <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
                     <input class="light-input" id="pixivCount" type="number" min="1" max="20" value="10" style="width:80px; margin:0;">
                     <span style="color:#ccc; font-size:0.8rem;">数量 1-20</span>
