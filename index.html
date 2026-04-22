@@ -562,43 +562,47 @@
     "use strict";
 
     
-    function getWorkingImageUrl(url) {
-        if (!url) return '';
-        
-        const match = url.match(/\/([^\/]+\.(jpg|png|jpeg|gif))/i);
-        let filename = match ? match[1] : Date.now() + '.jpg';
-        
-        const proxies = [
-            'https://i.pixiv.re/' + filename,
-            'https://pixiv.cat/' + filename,
-            'https://images.weserv.nl/?url=' + encodeURIComponent(url),
-            'https://wsrv.nl/?url=' + encodeURIComponent(url)
-        ];
-        
-        return proxies[Math.floor(Math.random() * proxies.length)];
+    const PIXIV_PROXIES = [
+        "pixiv.pics",
+        "i.pixiv.re", 
+        "i.pixiv.cat",
+        "pixiv.re",
+        "pixiv.cat"
+    ];
+
+    function convertToProxyUrl(originalUrl, proxy) {
+        return originalUrl.replace(/\/\/[^\/]+/, "//" + proxy);
     }
 
     async function fetchPixivImages(tags, r18, count) {
-        const keyword = tags || 'anime';
-        const rating = r18 ? 'explicit' : 'safe';
+        const keyword = tags || '';
+        const r18Param = r18 ? '1' : '0';
         
-        // 使用 Danbooru API
-        const apiUrl = `https://danbooru.donmai.us/posts.json?limit=${count}&tags=${encodeURIComponent(keyword + ' rating:' + rating)}&random=true`;
+      
+        let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
+        if (keyword) {
+            apiUrl += `&tag=${encodeURIComponent(keyword)}`;
+        }
         
         try {
-            const response = await fetch('https://corsproxy.io/?' + encodeURIComponent(apiUrl));
+            const response = await fetch(apiUrl);
             const data = await response.json();
             
-            if (data && data.length > 0) {
-                const urls = data.map(post => post.file_url || `https://cdn.donmai.us/original/${post.md5}.${post.file_ext}`);
-                return { urls, source: 'Danbooru' };
+            if (data.data && data.data.length > 0) {
+                const urls = data.data.map(item => {
+                    const url = item.urls.original || item.urls.regular;
+                    
+                    return convertToProxyUrl(url, PIXIV_PROXIES[0]);
+                });
+                return { urls, source: 'Pixiv' };
             }
         } catch (e) {
-            console.warn('Danbooru 失败:', e);
+            console.warn('Lolicon API失败:', e);
         }
         
         // 备用图片
-        const fallbackUrls = [
+        return { 
+            urls: [
             'https://dl.img.timecdn.cn/2025/11/06/bg7.jpg',
             'https://dl.img.timecdn.cn/2025/11/06/bg8.jpg',
             'https://dl.img.timecdn.cn/2025/11/06/bg9.jpg',
@@ -608,9 +612,10 @@
             'https://dl.img.timecdn.cn/2025/11/06/bg13.png',
             'https://dl.img.timecdn.cn/2025/11/06/bg14.png',
             'https://dl2.img.timecdn.cn/2025/11/06/bg15.jpg',
-        ];
-        
-        return { urls: fallbackUrls.slice(0, count), source: 'Fallback', isFallback: true };
+            ].slice(0, count), 
+            source: 'Fallback',
+            isFallback: true 
+        };
     }
 
     function waitForSecretSection(callback, maxAttempts = 50) {
@@ -636,7 +641,7 @@
 
         container.innerHTML = `
             <div class="light-item">
-                <span>Pixiv 背景</span>
+                <span>Pixiv 随机背景喵～</span>
                 <label class="light-switch">
                     <input type="checkbox" id="pixivToggle">
                     <span class="light-slider"></span>
@@ -650,15 +655,16 @@
                         <span class="light-slider"></span>
                     </label>
                 </div>
-                <input class="light-input" id="pixivTags" placeholder="标签 (如：fate, miku, landscape)" style="margin-bottom:8px;">
+                <input class="light-input" id="pixivTags" placeholder="标签 (如：少女、风景、初音)" style="margin-bottom:8px;">
                 <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-                    <input class="light-input" id="pixivCount" type="number" min="1" max="10" value="5" style="width:80px; margin:0;">
-                    <span style="color:#ccc; font-size:0.8rem;">数量 1-10</span>
+                    <input class="light-input" id="pixivCount" type="number" min="1" max="5" value="1" style="width:80px; margin:0;">
+                    <span style="color:#ccc; font-size:0.8rem;">数量 1-5</span>
                 </div>
                 <button class="light-btn" id="pixivFetchBtn" style="width:100%; margin-bottom:8px;">🎲 获取图片</button>
-                <div id="pixivPreview" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; max-height:200px; overflow-y:auto; min-height:80px; background:transparent; padding:8px; border-radius:12px;"></div>
+                <div id="pixivPreview" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; max-height:200px; overflow-y:auto;"></div>
                 <button class="light-btn small" id="pixivApplyBtn" style="width:100%;" disabled>🖼️ 设为背景</button>
                 <div id="pixivStatus" style="font-size:0.75rem; margin-top:8px; opacity:0.8; text-align:center;"></div>
+                <div style="font-size:0.7rem; opacity:0.6; margin-top:6px; text-align:center;">图片来自Pixiv，仅供个人欣赏</div>
             </div>
         `;
 
@@ -669,160 +675,59 @@
     function initPixivLogic() {
         const toggle = document.getElementById('pixivToggle');
         const panel = document.getElementById('pixivPanel');
-        const r18Check = document.getElementById('pixivR18');
-        const tagsInput = document.getElementById('pixivTags');
-        const countInput = document.getElementById('pixivCount');
         const fetchBtn = document.getElementById('pixivFetchBtn');
         const applyBtn = document.getElementById('pixivApplyBtn');
         const previewDiv = document.getElementById('pixivPreview');
         const statusDiv = document.getElementById('pixivStatus');
+        const tagsInput = document.getElementById('pixivTags');
+        const countInput = document.getElementById('pixivCount');
+        const r18Check = document.getElementById('pixivR18');
 
         let fetchedUrls = [];
         let selectedUrl = '';
-        
-      
-        const oldBg = document.getElementById('pixivBgImage');
-        if (oldBg) oldBg.remove();
-        
-       
-        const pixivBgImage = document.createElement('img');
-        pixivBgImage.id = 'pixivBgImage';
-        pixivBgImage.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-            z-index: 5;
-            pointer-events: none;
-        `;
-        document.body.appendChild(pixivBgImage);
-        
-        
+
+        // 创建背景图片元素
+        let pixivBgImage = document.getElementById('pixivBgImage');
+        if (!pixivBgImage) {
+            pixivBgImage = document.createElement('img');
+            pixivBgImage.id = 'pixivBgImage';
+            pixivBgImage.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                object-fit: cover; display: none; z-index: 5; pointer-events: none;
+            `;
+            document.body.appendChild(pixivBgImage);
+        }
+
         const desktopVideo = document.getElementById('desktopVideo');
         const mobileVideo = document.getElementById('mobileVideo');
-        const videoBg = document.querySelector('.video-bg');
-        const overlay = document.querySelector('.overlay');
-        
-       
-        if (videoBg) videoBg.style.zIndex = '1';
-        if (overlay) overlay.style.zIndex = '2';
-        
-        
-        const content = document.querySelector('.content');
-        if (content) content.style.zIndex = '10';
 
         function restoreVideo() {
             pixivBgImage.style.display = 'none';
-            if (desktopVideo && mobileVideo) {
-                const isMobile = /iPhone|iPad|Android|Mobile|iPod/i.test(navigator.userAgent);
-                const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-                const useDesktop = !isMobile || isLandscape;
-                desktopVideo.style.display = useDesktop ? 'block' : 'none';
-                mobileVideo.style.display = useDesktop ? 'none' : 'block';
-                const activeVideo = useDesktop ? desktopVideo : mobileVideo;
-                if (activeVideo.paused) activeVideo.play().catch(() => {});
-            }
-            if (videoBg) videoBg.style.zIndex = '1';
-            if (overlay) overlay.style.zIndex = '2';
+            if (desktopVideo) desktopVideo.style.display = 'block';
+            if (mobileVideo) mobileVideo.style.display = 'block';
         }
-
-         function renderPreviews(urls) {
-    previewDiv.innerHTML = '';
-    if (!urls.length) {
-        previewDiv.innerHTML = '<div style="color:#aaa; text-align:center; width:100%;">没有获取到图片，再试一次~</div>';
-        return;
-    }
-    
-    
-    previewDiv.style.backgroundColor = 'transparent';
-    previewDiv.style.minHeight = '80px';
-    
-    urls.forEach((url, idx) => {
-        const workingUrl = getWorkingImageUrl(url);
-        const thumb = document.createElement('img');
-        thumb.style.cssText = `
-            width: 70px; 
-            height: 70px; 
-            object-fit: cover; 
-            border-radius: 8px;
-            cursor: pointer; 
-            border: 2px solid transparent; 
-            background: rgba(42, 58, 74, 0.8);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        `;
-        
-        
-        thumb.style.display = 'flex';
-        thumb.style.alignItems = 'center';
-        thumb.style.justifyContent = 'center';
-        thumb.textContent = '⏳';
-        thumb.style.fontSize = '20px';
-        
-        const img = new Image();
-        img.onload = () => { 
-            thumb.src = workingUrl;
-            thumb.textContent = '';
-            thumb.style.display = 'block';
-        };
-        img.onerror = () => {
-            thumb.style.backgroundColor = 'rgba(74, 90, 106, 0.9)';
-            thumb.style.display = 'flex';
-            thumb.style.alignItems = 'center';
-            thumb.style.justifyContent = 'center';
-            thumb.textContent = '❌';
-            thumb.style.fontSize = '24px';
-            thumb.style.color = '#fff';
-        };
-        img.src = workingUrl;
-        
-        thumb.addEventListener('click', () => {
-            previewDiv.querySelectorAll('img').forEach(img => {
-                img.style.borderColor = 'transparent';
-                img.style.transform = 'scale(1)';
-            });
-            thumb.style.borderColor = '#5f9eff';
-            thumb.style.transform = 'scale(1.05)';
-            selectedUrl = url;
-            applyBtn.disabled = false;
-            statusDiv.innerHTML = '✅ 已选择图片，点击"设为背景"';
-            statusDiv.style.color = '#8eff8e';
-        });
-        previewDiv.appendChild(thumb);
-    });
-    
-    if (urls.length > 0 && previewDiv.firstChild) {
-        previewDiv.firstChild.click();
-    }
-}
 
         toggle.addEventListener('change', function() {
             panel.style.display = this.checked ? 'block' : 'none';
             if (!this.checked) {
                 restoreVideo();
-                applyBtn.disabled = true;
                 fetchedUrls = [];
                 previewDiv.innerHTML = '';
                 selectedUrl = '';
-                statusDiv.innerHTML = '';
+                applyBtn.disabled = true;
             }
         });
 
         fetchBtn.addEventListener('click', async function() {
             const tags = tagsInput.value.trim();
-            let count = parseInt(countInput.value);
-            if (isNaN(count) || count < 1) count = 5;
-            if (count > 10) count = 10;
+            let count = parseInt(countInput.value) || 1;
+            count = Math.min(5, Math.max(1, count));
             const r18 = r18Check.checked;
 
-            previewDiv.innerHTML = '<div style="color:#aaa; text-align:center; width:100%;">加载中...</div>';
-            fetchedUrls = [];
-            applyBtn.disabled = true;
+            previewDiv.innerHTML = '<div style="color:#aaa; text-align:center; width:100%;">⏳ 加载中...</div>';
             fetchBtn.disabled = true;
             fetchBtn.textContent = '获取中...';
-            statusDiv.innerHTML = '⏳ 正在搜索图片...';
+            statusDiv.innerHTML = '正在获取图片...';
 
             try {
                 const result = await fetchPixivImages(tags, r18, count);
@@ -830,9 +735,8 @@
                 
                 if (fetchedUrls.length > 0) {
                     renderPreviews(fetchedUrls);
-                    const sourceText = result.source ? ` (${result.source})` : '';
-                    const fallbackText = result.isFallback ? ' ⚠️ 演示图片' : '';
-                    statusDiv.innerHTML = `✅ 获取到 ${fetchedUrls.length} 张图片${sourceText}${fallbackText}`;
+                    const fallbackText = result.isFallback ? ' (使用演示图片)' : '';
+                    statusDiv.innerHTML = `✅ 获取到 ${fetchedUrls.length} 张图片${fallbackText}`;
                 } else {
                     throw new Error('没有获取到图片');
                 }
@@ -846,26 +750,63 @@
             }
         });
 
-        applyBtn.addEventListener('click', function() {
-            if (selectedUrl && pixivBgImage) {
-                // 隐藏视频和视频背景容器
-                if (desktopVideo) desktopVideo.style.display = 'none';
-                if (mobileVideo) mobileVideo.style.display = 'none';
-                if (videoBg) videoBg.style.opacity = '0';
-                
-                // 显示图片
-                const workingUrl = getWorkingImageUrl(selectedUrl);
-                pixivBgImage.src = workingUrl;
-                pixivBgImage.style.display = 'block';
-                
-                // 加载失败时使用备用图片
-                pixivBgImage.onerror = () => {
-                    console.warn('图片加载失败，使用备用');
-                    pixivBgImage.src = 'https://picsum.photos/id/104/1920/1080';
+        function renderPreviews(urls) {
+            previewDiv.innerHTML = '';
+            
+            urls.forEach((url, idx) => {
+                const thumb = document.createElement('img');
+                thumb.style.cssText = `
+                    width: 70px; height: 70px; object-fit: cover; border-radius: 8px;
+                    cursor: pointer; border: 2px solid transparent; background: #2a3a4a;
+                `;
+                thumb.src = url;
+                thumb.onerror = () => {
+                    // 尝试下一个代理
+                    for (let proxy of PIXIV_PROXIES.slice(1)) {
+                        const newUrl = convertToProxyUrl(url, proxy);
+                        thumb.src = newUrl;
+                        break;
+                    }
                 };
                 
-                const hint = document.getElementById('bgHint');
-                if (hint) hint.textContent = `🎨 Pixiv风格背景`;
+                thumb.addEventListener('click', () => {
+                    previewDiv.querySelectorAll('img').forEach(img => {
+                        img.style.borderColor = 'transparent';
+                    });
+                    thumb.style.borderColor = '#5f9eff';
+                    selectedUrl = url;
+                    applyBtn.disabled = false;
+                    statusDiv.innerHTML = '✅ 已选择图片';
+                });
+                
+                previewDiv.appendChild(thumb);
+            });
+
+            // 默认选中第一张
+            if (previewDiv.firstChild) {
+                previewDiv.firstChild.click();
+            }
+        }
+
+        applyBtn.addEventListener('click', function() {
+            if (selectedUrl && pixivBgImage) {
+                if (desktopVideo) desktopVideo.style.display = 'none';
+                if (mobileVideo) mobileVideo.style.display = 'none';
+                
+                pixivBgImage.src = selectedUrl;
+                pixivBgImage.style.display = 'block';
+                
+                pixivBgImage.onerror = () => {
+                    // 尝试备用代理
+                    for (let proxy of PIXIV_PROXIES) {
+                        const newUrl = convertToProxyUrl(selectedUrl, proxy);
+                        if (newUrl !== selectedUrl) {
+                            pixivBgImage.src = newUrl;
+                            break;
+                        }
+                    }
+                };
+                
                 statusDiv.innerHTML = '✅ 已设为背景';
             }
         });
@@ -873,19 +814,10 @@
 
     waitForSecretSection((secretSection) => {
         injectPixivUI(secretSection);
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach(mut => {
-                if (mut.target.classList && mut.target.classList.contains('visible')) {
-                    injectPixivUI(secretSection);
-                }
-            });
-        });
-        observer.observe(secretSection, { attributes: true, attributeFilter: ['class'] });
     });
 
 })();
 </script>
-
 
 </body>
 </html>
