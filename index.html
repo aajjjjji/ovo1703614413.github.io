@@ -920,4 +920,38 @@
       
         const selectedUrl = fetchedUrls[selectedIndex];
         const corsProxy = 'https://corsproxy.io/?';
-        pixivBgImage.src = corsProxy + encodeURIComponent(selec
+        pixivBgImage.src = corsProxy + encodeURIComponent(selectedUrl);
+        pixivBgImage.crossOrigin = 'anonymous';
+        pixivBgImage.style.display = 'block';
+        
+        pixivBgImage.onerror = () => {
+         
+            pixivBgImage.src = selectedUrl;
+        };
+        
+        statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景`;
+    }
+});
+    }
+
+    
+    waitForSecretSection((secretSection) => {
+        injectPixivUI(secretSection);
+        
+        
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mut => {
+                if (mut.target.classList && mut.target.classList.contains('visible')) {
+                    injectPixivUI(secretSection);
+                }
+            });
+        });
+        observer.observe(secretSection, { attributes: true, attributeFilter: ['class'] });
+    });
+
+})();
+</script>
+
+
+</body>
+</html>
