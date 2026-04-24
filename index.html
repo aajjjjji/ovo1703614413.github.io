@@ -574,7 +574,7 @@
     }
 
     async function fetchPixivImages(tags, r18, count) {
-    console.log('🔍 开始获取图片，数量:', count);
+    console.log('开始获取图片，数量:', count);
     
     const keyword = tags || '';
     const r18Param = r18 ? '1' : '0';
@@ -639,7 +639,7 @@
     }
     
    
-    console.log('📂 使用备用图库');
+    console.log('使用备用图库');
     if (typeof IMAGE_LIST !== 'undefined' && IMAGE_LIST.length > 0) {
         const shuffled = [...IMAGE_LIST].sort(() => Math.random() - 0.5);
         return { 
@@ -922,7 +922,7 @@
 
     const originalUrl = fetchedUrls[selectedIndex];
     
-    // 备用反代列表（按稳定性排序，可自行增删）
+  
     const proxyList = [
         'i.pixiv.re',
         'pixiv.pics',
@@ -939,7 +939,7 @@
 
     function tryNextProxy() {
         if (proxyIndex >= maxAttempts) {
-            // 所有反代都失败，恢复视频背景并提示
+            
             statusDiv.innerHTML = '❌ 所有反代均失败，请检查网络或稍后重试';
             restoreVideo();
             return;
@@ -1016,7 +1016,10 @@
         "兔女郎": ["兔女郎"], "bunny": ["兔女郎"],
         "女仆": ["女仆装"], "maid": ["女仆装"],
         "黑丝": ["黑丝"], "black silk": ["黑丝"],
-        "百合": ["百合"],"拉拉":["百合"],"La":["百合"],
+        "百合": ["百合"],"拉拉":["百合"],"la":["百合"],
+        "男娘": ["男娘"],"小男娘":["男娘"],"骚0":["男娘"],"0":["男娘"],
+        "视频": ["视频"],"动态视频":["动态"],"动态背景":["视频"]
+        "大鸡鸡":["大鸡鸡"],"鸡鸡":["大鸡鸡"],"唧唧":["大鸡鸡"],"几几":["大鸡鸡"],"鸡巴":["大鸡鸡"],
     };
     
     let searchKeywordToChineseMap = {};
@@ -1051,13 +1054,22 @@
     function loadBackupImages() {
         if (typeof IMAGE_LIST !== 'undefined' && Array.isArray(IMAGE_LIST)) {
             backupImageList = IMAGE_LIST.map(item => {
-                if (typeof item === 'string') return { url: item, tags: [] };
-                return { url: item.url, tags: item.tags || [] };
+                if (typeof item === 'string') return { url: item, tags: [], isVideo: false };
+                // 优先使用手动标记的 isVideo，再根据后缀判断
+                let isVideo = item.isVideo === true;
+                if (!isVideo && item.url) {
+                    isVideo = item.url.endsWith('.mp4') || 
+                              item.url.endsWith('.webm') || 
+                              item.url.endsWith('.mov') ||
+                              item.url.endsWith('.ogg');
+                }
+                return { url: item.url, tags: item.tags || [], isVideo: isVideo };
             });
+            console.log(`✅ 已加载 ${backupImageList.length} 个媒体，其中视频: ${backupImageList.filter(i => i.isVideo).length} 个`);
         } else {
             backupImageList = [];
+            console.warn('未找到 IMAGE_LIST');
         }
-        console.log(`已加载 ${backupImageList.length} 张图片`);
     }
     
     function filterImagesBySearchQuery(searchText) {
@@ -1071,28 +1083,78 @@
         });
     }
     
+    async function loadVideoWithBlob(url, videoElement) {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            // 尝试检测视频类型
+            let mimeType = 'video/mp4';
+            const header = await blob.slice(0, 8).arrayBuffer();
+            const bytes = new Uint8Array(header);
+            // MP4 文件头检测
+            if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
+                mimeType = 'video/mp4';
+            }
+            // WebM 文件头检测
+            else if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
+                mimeType = 'video/webm';
+            }
+            const videoBlob = new Blob([blob], { type: mimeType });
+            const blobUrl = URL.createObjectURL(videoBlob);
+            videoElement.src = blobUrl;
+            videoElement.load();
+            await videoElement.play();
+            // 播放结束后释放 Blob URL
+            videoElement.onended = () => URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+            console.warn('Blob 加载失败，尝试直接播放:', e);
+            videoElement.src = url;
+            videoElement.load();
+            videoElement.play().catch(() => {});
+        }
+    }
+    
     function applySelectedImage() {
         if (!lastFilteredImages.length || selectedIndex >= lastFilteredImages.length) {
             const statusDiv = document.getElementById('backupSearchStatus');
-            if (statusDiv) statusDiv.innerHTML = '❌ 没有可用的图片，请先搜索';
+            if (statusDiv) statusDiv.innerHTML = '❌ 没有可用的媒体，请先搜索';
             return false;
         }
+        
         const selected = lastFilteredImages[selectedIndex];
+        const isVideo = selected.isVideo === true;
+        
         const desktopVideo = document.getElementById('desktopVideo');
         const mobileVideo = document.getElementById('mobileVideo');
         let pixivBgImage = document.getElementById('pixivBgImage');
-        if (!pixivBgImage) {
-            pixivBgImage = document.createElement('img');
-            pixivBgImage.id = 'pixivBgImage';
-            pixivBgImage.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;z-index:3;pointer-events:none;`;
-            document.body.appendChild(pixivBgImage);
+        
+        if (isVideo) {
+            if (pixivBgImage) pixivBgImage.style.display = 'none';
+            
+            async function playVideo(videoEl) {
+                videoEl.style.display = 'block';
+                await loadVideoWithBlob(selected.url, videoEl);
+            }
+            
+            if (desktopVideo) playVideo(desktopVideo);
+            if (mobileVideo) playVideo(mobileVideo);
+            
+            const hint = document.getElementById('bgHint');
+            if (hint) hint.innerText = `🎬 视频 · ${selected.url.split('/').pop().slice(0, 30)}`;
+        } else {
+            if (desktopVideo) desktopVideo.style.display = 'none';
+            if (mobileVideo) mobileVideo.style.display = 'none';
+            if (!pixivBgImage) {
+                pixivBgImage = document.createElement('img');
+                pixivBgImage.id = 'pixivBgImage';
+                pixivBgImage.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;z-index:3;pointer-events:none;`;
+                document.body.appendChild(pixivBgImage);
+            }
+            pixivBgImage.style.display = 'block';
+            pixivBgImage.src = selected.url;
+            const hint = document.getElementById('bgHint');
+            if (hint) hint.innerText = `🖼️ ${selected.url.split('/').pop().slice(0, 30)} (${(selected.tags || []).slice(0, 3).join(', ')})`;
         }
-        if (desktopVideo) desktopVideo.style.display = 'none';
-        if (mobileVideo) mobileVideo.style.display = 'none';
-        pixivBgImage.style.display = 'block';
-        pixivBgImage.src = selected.url;
-        const hint = document.getElementById('bgHint');
-        if (hint) hint.innerText = `🔍 ${selected.url.split('/').pop().slice(0, 30)} (${(selected.tags || []).slice(0, 3).join(', ')})`;
         return true;
     }
     
@@ -1110,13 +1172,38 @@
             const slideItem = document.createElement('div');
             slideItem.className = 'backup-slide-item';
             if (idx === selectedIndex) slideItem.classList.add('selected');
-            const img = document.createElement('img');
-            img.src = item.url;
-            img.title = (item.tags || []).join(', ');
-            img.onerror = function() { 
-                this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'%3E%3Crect width=\'50\' height=\'50\' fill=\'%23333\'/%3E%3Ctext x=\'25\' y=\'30\' text-anchor=\'middle\' fill=\'%23fff\' font-size=\'10\'%3E错误%3C/text%3E%3C/svg%3E';
-            };
-            slideItem.appendChild(img);
+            
+            const isVideo = item.isVideo === true;
+            
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.src = item.url;
+                video.muted = true;
+                video.playsInline = true;
+                video.preload = 'metadata';
+                video.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
+                video.addEventListener('loadedmetadata', () => {
+                    video.currentTime = 1;
+                });
+                video.onerror = function() {
+                    this.style.display = 'none';
+                    const fallback = document.createElement('span');
+                    fallback.textContent = '🎬';
+                    fallback.style.cssText = 'width:150px;height:170px;display:flex;align-items:center;justify-content:center;background:#2a3a4a;border-radius:8px;font-size:24px;';
+                    slideItem.appendChild(fallback);
+                };
+                slideItem.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = item.url;
+                img.title = (item.tags || []).join(', ');
+                img.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
+                img.onerror = function() { 
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'170\'%3E%3Crect width=\'150\' height=\'170\' fill=\'%23333\'/%3E%3Ctext x=\'75\' y=\'90\' text-anchor=\'middle\' fill=\'%23fff\' font-size=\'14\'%3E错误%3C/text%3E%3C/svg%3E';
+                };
+                slideItem.appendChild(img);
+            }
+            
             slideItem.addEventListener('click', () => updateSelection(idx));
             slider.appendChild(slideItem);
         });
@@ -1154,14 +1241,14 @@
         lastFilteredImages = filterImagesBySearchQuery(searchText);
         selectedIndex = 0;
         if (lastFilteredImages.length === 0) {
-            if (statusDiv) statusDiv.innerHTML = `❌ 没有找到匹配的图片 (搜索: ${searchText || '空'})`;
+            if (statusDiv) statusDiv.innerHTML = `❌ 没有找到匹配的内容 (搜索: ${searchText || '空'})`;
             const sliderContainer = document.getElementById('backupSliderContainer');
             if (sliderContainer) sliderContainer.style.display = 'none';
             const applyBtn = document.getElementById('backupApplyBtn');
             if (applyBtn) applyBtn.disabled = true;
             return;
         }
-        if (statusDiv) statusDiv.innerHTML = `✅ 找到 ${lastFilteredImages.length} 张图片，可左右滑动选择`;
+        if (statusDiv) statusDiv.innerHTML = `✅ 找到 ${lastFilteredImages.length} 个内容，可左右滑动选择`;
         renderSlider(lastFilteredImages);
     }
     
@@ -1175,7 +1262,7 @@
         
         container.innerHTML = `
             <div class="light-item">
-                <span>备用图搜索</span>
+                <span>备用图库搜索</span>
                 <label class="light-switch">
                     <input type="checkbox" id="backupSearchToggle">
                     <span class="light-slider"></span>
@@ -1187,7 +1274,7 @@
                     <button id="backupSearchBtn" class="light-btn small">🔍 搜索</button>
                 </div>
                 <div style="font-size:0.7rem; background:#0f1a24; padding:6px 10px; border-radius:20px; margin-bottom:12px;">
-                    想要多搜索？加个#吧喵～
+                     想要多标签？加个#吧喵～
                 </div>
                 <div id="backupSliderContainer" style="display:none;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -1198,23 +1285,25 @@
                     <style>
                         #backupSlider::-webkit-scrollbar{display:none;}
                         .backup-slide-item {
-                            flex:0 0 50px;
+                            flex:0 0 150px;
                             scroll-snap-align:center;
                             transition: all 0.2s;
                             cursor: pointer;
                         }
                         .backup-slide-item.selected {
-                            transform: scale(1.1);
+                            transform: scale(1.08);
                         }
-                        .backup-slide-item img {
-                            width:120px;
-                            height:150px;
+                        .backup-slide-item img, 
+                        .backup-slide-item video {
+                            width:150px;
+                            height:170px;
                             object-fit:cover;
                             border-radius:8px;
                             border:2px solid transparent;
                             background:#2a3a4a;
                         }
-                        .backup-slide-item.selected img {
+                        .backup-slide-item.selected img,
+                        .backup-slide-item.selected video {
                             border-color:#5f9eff;
                             box-shadow:0 0 10px rgba(95,158,255,0.5);
                         }
@@ -1259,6 +1348,127 @@
         document.addEventListener('DOMContentLoaded', waitForSecretSection);
     } else {
         waitForSecretSection();
+    }
+})();
+</script>
+
+<!-- 更新公告弹窗 -->
+<div id="updateModal" class="modal" style="display: none;">
+    <div class="modal-card" style="max-width: 500px; text-align: center;">
+        <h3>✨ 更新公告 ✨</h3>
+        <div id="updateContent" style="margin: 20px 0; text-align: left; max-height: 400px; overflow-y: auto; padding: 0 10px;">
+            <!-- 更新内容会动态插入这里 -->
+        </div>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
+            <button id="closeUpdateBtn" class="action-btn" style="background: #5f9eff; border-color: #5f9eff;">知道了</button>
+        </div>
+        <div class="status-bar" style="margin-top: 12px;">
+            <span>📢 感谢你的支持！</span>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    "use strict";
+
+    // ==================== 更新公告配置 ====================
+    // 每次更新时等于修改以下内容：
+    // 1. VERSION等于版本号（每次更新就一）
+    // 2. updateInfo等于更新内容
+    
+    const VERSION = "0.0.0";  // 当前网站版本（每次更新记得改这里！）
+    
+    const updateInfo = `
+        <div style="line-height: 1.8;">
+            <p style="color: #5f9eff; font-weight: bold;">新版本 v${VERSION} 更新内容：</p>
+            <ul style="margin: 10px 0 10px 20px; padding-left: 0;">
+                <li>修复备用图库搜索</li>
+                <li>（修复了有时候搜索不了的问题）</li>
+                <li>给备用图库搜索添加了视频支持可以直接搜视频</li>
+                <li>优化多标签搜索（用 # 分隔）</li>
+                <li>优化移动端显示效果（主要是因为一些代码太占手机性能了)</li>
+            </ul>
+            <p style="color: #ccc; font-size: 0.85rem;">如果你遇到任何问题，欢迎反馈~</p>
+        </div>
+    `;
+    
+   
+    const STORAGE_KEY = "website_update_read_version";
+    
+  
+    function getReadVersion() {
+        return localStorage.getItem(STORAGE_KEY) || "0";
+    }
+    
+    
+    function saveReadVersion(version) {
+        localStorage.setItem(STORAGE_KEY, version);
+    }
+    
+   
+    function showUpdateModal() {
+        const modal = document.getElementById('updateModal');
+        const contentDiv = document.getElementById('updateContent');
+        if (!modal || !contentDiv) return;
+        
+       
+        contentDiv.innerHTML = updateInfo;
+        
+       
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        
+        const closeBtn = document.getElementById('closeUpdateBtn');
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+               
+                saveReadVersion(VERSION);
+            };
+        }
+        
+       
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                saveReadVersion(VERSION);
+            }
+        };
+    }
+    
+    
+    function checkForUpdate() {
+        const readVersion = getReadVersion();
+        
+        if (compareVersion(VERSION, readVersion) > 0) {
+            showUpdateModal();
+        }
+    }
+    
+   
+    function compareVersion(v1, v2) {
+        const parts1 = v1.split('.').map(Number);
+        const parts2 = v2.split('.').map(Number);
+        const maxLen = Math.max(parts1.length, parts2.length);
+        
+        for (let i = 0; i < maxLen; i++) {
+            const num1 = parts1[i] || 0;
+            const num2 = parts2[i] || 0;
+            if (num1 > num2) return 1;
+            if (num1 < num2) return -1;
+        }
+        return 0;
+    }
+    
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkForUpdate);
+    } else {
+        checkForUpdate();
     }
 })();
 </script>
