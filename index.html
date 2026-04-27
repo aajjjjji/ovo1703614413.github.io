@@ -68,32 +68,92 @@
         }
 
        
-        #lightSettingsBtn {
-            position: fixed; top: 18px; right: 18px; z-index: 10000;
-            width: 48px; height: 48px; border-radius: 30px;
-            background: #1e2a3a; border: 1px solid #3a4a5a;
-            color: white; font-size: 26px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; user-select: none; transition: transform 0.1s;
+            #layer2Indicator {
+             position: fixed;
+           left: 16px;
+           bottom: 20px;
+           z-index: 20;
+           background: rgba(0, 0, 0, 0.45);
+           backdrop-filter: blur(8px);
+           -webkit-backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;          /* 默认隐藏 */
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: 0.5px;
+              }
+       
+          #lightSettingsBtn {
+              position: fixed; top: 18px; right: 18px; z-index: 10000;
+              width: 48px;        /* ← 你可以同时改按钮大小 */
+              height: 48px;
+              border-radius: 30px;
+              background: transparent;            /* 原来是 #1e2a3a */
+              border: 1px solid rgba(255,255,255,0.3);  /* 半透白边，保留一点轮廓 */
+    
+              color: white;
+              display: flex; align-items: center; justify-content: center;
+              cursor: pointer; user-select: none;
+              transition: transform 0.3s ease;
+              padding: 0px;        /* 可一起调，影响内部图片大小 */
+         }
+         
+         #lightSettingsBtn img.settings-icon {
+           /* filter: invert(1); 这个是让图片颜色反转*/
+           width: 100%;
+           height: 100%;
+           object-fit: contain;
+           pointer-events: none;
         }
+         
         #lightSettingsBtn:active { transform: scale(0.95); }
+        #lightSettingsBtn.spin { animation: btnSpin 0.6s ease; }
+        @keyframes btnSpin { to { transform: rotate(360deg); } }
         #lightOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10001;
             background: rgba(0,0,0,0.5); display: none;
         }
         #lightDrawer {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 10002;
+            position: fixed; top: 70px; right: 18px; z-index: 10002;
             background: #1a2332;
-            border-top-left-radius: 20px; border-top-right-radius: 20px;
-            transform: translateY(100%); transition: transform 0.2s ease-out;
-            will-change: transform; padding: 16px 18px 25px;
-            max-height: 80vh; overflow-y: auto; color: #eee;
+            border-radius: 20px;
+            width: 340px; max-width: calc(100vw - 36px);
+            max-height: 80vh; overflow-y: auto;
+            padding: 16px 18px 25px;
+            color: #eee;
             -webkit-overflow-scrolling: touch;
+            transform-origin: top right;
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
-        #lightDrawer.show { transform: translateY(0); }
-        .light-handle {
-            width: 45px; height: 5px; background: #4a5a6a; border-radius: 10px;
-            margin: 0 auto 18px; cursor: grab; touch-action: none;
+        #lightDrawer.show {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
         }
+        /* 手机端菜单自动调整大小 */
+        @media (max-width: 640px) {
+            #lightDrawer {
+                width: calc(100vw - 36px);
+                max-width: 300px;
+                padding: 12px 14px 18px;
+                font-size: 0.9rem;
+            }
+            #lightDrawer .light-title { font-size: 1.1rem; margin-bottom: 16px; }
+            #lightDrawer .light-input,
+            #lightDrawer .light-select { padding: 8px 12px; font-size: 0.8rem; }
+            #lightDrawer .light-btn { padding: 8px 14px; font-size: 0.8rem; }
+            #lightDrawer .light-btn.small { padding: 5px 10px; font-size: 0.7rem; }
+        }
+        /* 隐藏拖动条，不再需要 */
+        .light-handle { display: none; }
         .light-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 20px; text-align: center; }
         .light-section { margin-bottom: 20px; }
         .light-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -155,6 +215,41 @@
             color: white; cursor: pointer; font-size: 0.9rem;
         }
         .captcha-success { color: #8eff8e; margin-top: 10px; display: none; }
+
+       /* 电脑端 */
+@media (min-width: 1024px) {
+    #lightDrawer {
+        width: 480px;                /* 菜单宽 */
+        max-width: 90vw;           
+    }
+   
+    #lightDrawer .light-input,
+    #lightDrawer .light-select {
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    #lightDrawer .light-btn {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    #lightDrawer .light-btn.small {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+
+@media (min-width: 1024px) {
+    .backup-slide-item {
+        flex: 0 0 160px;     /* 卡片宽度*/
+    }
+    .backup-slide-item img,
+    .backup-slide-item video {
+        width: 160px;
+        height: 180px;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -225,7 +320,10 @@
 </div>
 
 
-<div id="lightSettingsBtn">⚙️</div>
+
+<div id="lightSettingsBtn">
+    <img class="settings-icon" src="设置.png" alt="设置">
+</div>
 <div id="lightOverlay"></div>
 <div id="lightDrawer">
     <div class="light-handle" id="lightHandle"></div>
@@ -246,6 +344,13 @@
         <input class="light-input" id="lightVideoUrlInput" placeholder="粘贴视频直链">
         <button class="light-btn" id="lightApplyUrlBtn" style="width:100%;">应用链接</button>
     </div>
+    
+    <div class="light-section">
+    <div style="margin-bottom:6px;">Pixiv 分享链接</div>
+    <input class="light-input" id="pixivShareInput" placeholder="粘贴 Pixiv 作品链接">
+    <button class="light-btn" id="pixivShareBtn" style="width:100%;">设为背景</button>
+    <div id="pixivShareStatus" style="font-size:0.75rem; margin-top:6px;"></div>
+</div>
 
     <div class="light-section">
         <div style="margin-bottom:6px;">B站解析成背景</div>
@@ -257,7 +362,7 @@
     <div class="light-section">
         <div style="margin-bottom:6px;">📋 B站历史缓存</div>
         <div style="display:flex; gap:6px;">
-            <select class="light-select" id="lightHistorySelect"><option value="">-- 选择 --</option></select>
+            <select class="light-select" id="lightHistorySelect"><option value="">
             <button class="light-btn small" id="lightApplyHistoryBtn">应用</button>
             <button class="light-btn small" id="lightClearHistoryBtn">清空</button>
         </div>
@@ -505,32 +610,49 @@
 
    
     function openDrawer() {
-        overlay.style.display = 'block'; drawer.classList.add('show');
+        overlay.style.display = 'block';
+        drawer.classList.add('show');
         document.body.style.overflow = 'hidden';
         musicToggle.checked = !getActiveVideo().muted;
     }
     function closeDrawer() {
-        overlay.style.display = 'none'; drawer.classList.remove('show');
+        overlay.style.display = 'none';
+        drawer.classList.remove('show');
         document.body.style.overflow = '';
     }
-    drawerBtn.addEventListener('click', openDrawer);
+    function toggleDrawer() {
+        if (drawer.classList.contains('show')) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+        // 按钮旋转效果
+        drawerBtn.classList.add('spin');
+        setTimeout(() => drawerBtn.classList.remove('spin'), 600);
+    }
+    drawerBtn.addEventListener('click', toggleDrawer);
     overlay.addEventListener('click', closeDrawer);
 
     
-    let dragY = 0, dragActive = false;
-    handle.addEventListener('mousedown', e=>{ dragY=e.clientY; dragActive=true; drawer.style.transition='none'; });
-    window.addEventListener('mousemove', e=>{ if(!dragActive) return; const d=e.clientY-dragY; if(d>0) drawer.style.transform=`translateY(${d}px)`; });
-    window.addEventListener('mouseup', e=>{ if(!dragActive) return; dragActive=false; drawer.style.transition=''; if(e.clientY-dragY>70) closeDrawer(); else drawer.style.transform=''; });
-    handle.addEventListener('touchstart', e=>{ dragY=e.touches[0].clientY; dragActive=true; drawer.style.transition='none'; }, {passive:false});
-    window.addEventListener('touchmove', e=>{ if(!dragActive) return; const d=e.touches[0].clientY-dragY; if(d>0) drawer.style.transform=`translateY(${d}px)`; }, {passive:false});
-    window.addEventListener('touchend', e=>{ if(!dragActive) return; dragActive=false; drawer.style.transition=''; const d=(e.changedTouches[0]?.clientY||dragY)-dragY; if(d>70) closeDrawer(); else drawer.style.transform=''; });
+    const SECRET_PASSWORD = "1234";   // ← 在这里改你想用的密码
+let clickCnt = 0, timer;
+drawerBtn.addEventListener('click', () => {
+    clickCnt++;
+    if (clickCnt === 1) timer = setTimeout(() => clickCnt = 0, 800);
+    if (clickCnt === 3) {
+        clearTimeout(timer);
+        clickCnt = 0;
+        const input = prompt("请输入密码：");
+        if (input === SECRET_PASSWORD) {
+            secret.classList.add('visible');
+            alert('哎呀怎么藏这里了还是被你找到了喵～');   // 这句和原来完全一样
+        } else if (input !== null) {
+            alert('密码错误！');
+        }
+        // 如果点取消（input === null）则什么都不发生
+    }
+});
 
-    
-    let clickCnt=0, timer;
-    drawerBtn.addEventListener('click', ()=>{
-        clickCnt++; if(clickCnt===1) timer=setTimeout(()=>clickCnt=0,800);
-        if(clickCnt===3){ clearTimeout(timer); clickCnt=0; secret.classList.add('visible'); alert('哎呀怎么藏这里了还是被你找到了喵～'); }
-    });
 
     
     const FIXED_URL = 'https://qm.qq.com/q/R2nvpINxe2';
@@ -550,7 +672,133 @@
     document.getElementById('openQQHomeBtn').addEventListener('click', ()=>window.open('https://qm.qq.com/q/POMQp4DwCC','_blank'));
     window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ serverModal.style.display='none'; qqModal.style.display='none'; }});
 
-    console.log('✅ 设置菜单已修复，滑动验证流畅');
+     
+   // ==================== Pixiv 分享链接处理 (使用 PixivFE 公共实例) ====================
+const pixivShareInput = document.getElementById('pixivShareInput');
+const pixivShareBtn = document.getElementById('pixivShareBtn');
+const pixivShareStatus = document.getElementById('pixivShareStatus');
+
+// 1. 从 Pixiv 链接中提取作品 ID
+function extractPixivId(url) {
+    if (!url) return null;
+    let match;
+    match = url.match(/pixiv\.net\/artworks\/(\d+)/);
+    if (match) return match[1];
+    match = url.match(/pixiv\.net\/i\/(\d+)/);
+    if (match) return match[1];
+    match = url.match(/illust_id=(\d+)/);
+    if (match) return match[1];
+    match = url.match(/^(\d{6,10})$/);
+    if (match) return match[1];
+    return null;
+}
+
+// 2. 获取或创建背景图片元素
+function getOrCreatePixivBg() {
+    let pixivBgImage = document.getElementById('pixivBgImage');
+    if (!pixivBgImage) {
+        pixivBgImage = document.createElement('img');
+        pixivBgImage.id = 'pixivBgImage';
+        pixivBgImage.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;z-index:3;pointer-events:none;`;
+        document.body.appendChild(pixivBgImage);
+    }
+    return pixivBgImage;
+}
+
+// 3. 加载图片（带超时）
+function loadImageWithTimeout(img, url, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('超时')), timeout);
+        img.onload = () => { clearTimeout(timer); resolve(); };
+        img.onerror = () => { clearTimeout(timer); reject(new Error('加载失败')); };
+        img.src = url;
+    });
+}
+
+// 4. 核心逻辑：点击按钮后的操作
+pixivShareBtn.addEventListener('click', async () => {
+    const input = pixivShareInput.value.trim();
+    if (!input) {
+        alert('请先粘贴 Pixiv 链接');
+        return;
+    }
+    
+    const illustId = extractPixivId(input);
+    console.log('提取到的作品ID:', illustId, '原始输入:', input);
+    
+    if (!illustId) {
+        alert('无效的 Pixiv 链接！\n\n支持的格式：\n• https://www.pixiv.net/artworks/12345678\n• 直接输入作品ID：12345678');
+        return;
+    }
+    
+    pixivShareBtn.disabled = true;
+    pixivShareBtn.textContent = '获取中...';
+    pixivShareStatus.textContent = `⏳ 正在通过PixivFE获取作品 #${illustId}...`;
+    
+    // 隐藏视频背景
+    const desktopVideo = document.getElementById('desktopVideo');
+    const mobileVideo = document.getElementById('mobileVideo');
+    if (desktopVideo) desktopVideo.style.display = 'none';
+    if (mobileVideo) mobileVideo.style.display = 'none';
+    
+    const pixivBgImage = getOrCreatePixivBg();
+    
+    // 尝试通过多个 PixivFE 公共实例获取图片
+    const pixivFeInstances = [
+        'https://pixivfe.exozy.me',
+        'https://pixivfe.drgns.space',
+        'https://art.whateveritworks.org'
+    ];
+    
+    let loaded = false;
+    
+    for (const baseUrl of pixivFeInstances) {
+        try {
+            const apiUrl = `${baseUrl}/api/illust/${illustId}`;
+            console.log('尝试 PixivFE API:', apiUrl);
+            pixivShareStatus.textContent = `⏳ 正在查询PixivFE实例...`;
+            
+            const response = await fetch(apiUrl);
+            if (!response.ok) continue;
+            
+            const data = await response.json();
+            const imageUrl = data?.urls?.original || data?.urls?.regular;
+            
+            if (imageUrl) {
+                // PixivFE 返回的图片链接可能已是完整URL
+                const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : baseUrl + imageUrl;
+                console.log('找到图片链接:', fullImageUrl);
+                pixivShareStatus.textContent = `⏳ 正在下载图片...`;
+                
+                await loadImageWithTimeout(pixivBgImage, fullImageUrl, 15000);
+                loaded = true;
+                break;
+            }
+        } catch (e) {
+            console.warn('PixivFE实例失败:', baseUrl, e.message);
+            continue;
+        }
+    }
+    
+    if (loaded) {
+        pixivBgImage.style.display = 'block';
+        pixivShareStatus.textContent = `✅ 已设置 (Pixiv #${illustId})`;
+        const hint = document.getElementById('bgHint');
+        if (hint) hint.textContent = `🎨 Pixiv · ${illustId}`;
+        pixivShareInput.value = '';
+    } else {
+        pixivShareStatus.textContent = '❌ 该作品不存在、非公开或PixivFE服务不可用';
+        if (desktopVideo) desktopVideo.style.display = 'block';
+        if (mobileVideo) mobileVideo.style.display = 'block';
+    }
+    
+    pixivShareBtn.disabled = false;
+    pixivShareBtn.textContent = '设为背景';
+});
+     
+
+
+    console.log('✅ 设置菜单已加载');
 })();
 </script>
 
@@ -579,86 +827,99 @@
     const keyword = tags || '';
     const r18Param = r18 ? '1' : '0';
     
-    
-    const CORS_PROXIES = [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?',
-        'https://thingproxy.freeboard.io/fetch/'
-    ];
-    
-    
-    
-    for (const proxy of CORS_PROXIES) {
-        try {
-            console.log(`📡 尝试代理: ${proxy}`);
-            let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
-            
-            if (keyword) {
-                apiUrl += `&tag=${encodeURIComponent(keyword)}`;
-            }
-            
-            const response = await fetch(proxy + encodeURIComponent(apiUrl));
-            
-            if (!response.ok) continue;
-            
-            const data = await response.json();
-            
-            if (data.data && data.data.length > 0) {
-                const urls = data.data.map(item => {
-                    return item.urls.original || item.urls.regular;
-                });
-                console.log(`✅ Pixiv 获取成功: ${urls.length} 张`);
-                return { 
-                    urls: urls,
-                    source: 'Pixiv',
-                    isFallback: false 
-                };
-            }
-        } catch (e) {
-            console.warn(`❌ 代理 ${proxy} 失败:`, e.message);
-        }
-    }
-    
-    
-    
+   
     try {
-        console.log('📡 尝试直连 API...');
+        console.log('📡 尝试 Lolicon API...');
         let apiUrl = `https://api.lolicon.app/setu/v2?r18=${r18Param}&num=${count}`;
-        if (keyword) apiUrl += `&tag=${encodeURIComponent(keyword)}`;
         
-        const response = await fetch(apiUrl);
-        const data = await response.json();
         
-        if (data.data && data.data.length > 0) {
-            const urls = data.data.map(item => item.urls.original || item.urls.regular);
-            console.log(`✅ 直连成功: ${urls.length} 张`);
-            return { urls, source: 'Pixiv', isFallback: false };
+        if (keyword) {
+         
+            apiUrl += `&tag=${encodeURIComponent(keyword)}`;
+        }
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.data && data.data.length > 0) {
+                const urls = data.data.map(item => item.urls.regular || item.urls.original);
+                console.log(`✅ Lolicon 成功: ${urls.length} 张`);
+                return { urls, source: 'Pixiv', isFallback: false };
+            }
         }
     } catch (e) {
-        console.warn('❌ 直连失败:', e.message);
+        console.warn('在线 API 不可用:', e.message);
     }
     
-   
-    console.log('使用备用图库');
+    
+    console.log('📦 在线 API 无结果，使用本地图库按标签筛选');
+    
     if (typeof IMAGE_LIST !== 'undefined' && IMAGE_LIST.length > 0) {
-        const shuffled = [...IMAGE_LIST].sort(() => Math.random() - 0.5);
+        let filtered = IMAGE_LIST;
+        
+        if (keyword) {
+            // 标签别名映射（中文↔日文↔英文）
+            const TAG_ALIAS = {
+                "蔚蓝": ["蔚蓝档案", "ブルーアーカイブ", "bluearchive"],
+                "泳装": ["泳装", "水着", "swimsuit", "bikini"],
+                "猫耳": ["猫耳", "猫娘", "neko", "cat"],
+                "兔女郎": ["兔女郎", "バニー", "bunny"],
+                "女仆": ["女仆", "女仆装", "メイド", "maid"],
+                "原神": ["原神", "genshin"],
+                "崩坏": ["崩坏", "honkai"],
+                "初音": ["初音", "初音未来", "miku", "ミク"],
+                "色色": ["色色", "R-18", "r18"],
+                "福瑞": ["福瑞", "furry", "獣人","兽人"],
+                "魅魔": ["魅魔", "succubus", "サキュバス"],
+            };
+            
+            const searchLower = keyword.toLowerCase();
+            
+            // 查找别名
+            let keywords = [keyword];
+            for (const [cn, aliases] of Object.entries(TAG_ALIAS)) {
+                if (searchLower.includes(cn.toLowerCase())) {
+                    keywords = [...aliases];
+                    break;
+                }
+            }
+            
+           
+            filtered = IMAGE_LIST.filter(item => {
+                const itemTags = (item.tags || []).map(t => t.toLowerCase());
+                if (itemTags.length === 0) return false;
+                
+                return keywords.some(kw => 
+                    itemTags.some(tag => 
+                        tag.includes(kw) || kw.includes(tag)
+                    )
+                );
+            });
+        }
+        
+      
+        const source = filtered.length > 0 ? filtered : IMAGE_LIST;
+        const shuffled = [...source].sort(() => Math.random() - 0.5);
+        
+        console.log(`本地图库筛选: ${shuffled.length} 张可用`);
         return { 
             urls: shuffled.slice(0, count),
-            source: `备用图库 (${IMAGE_LIST.length}张)`,
+            source: `本地图库 (${source.length}张)`,
             isFallback: true 
         };
     }
     
-    // 最终保底
+    
     return { 
-        urls: [
-            'https://picsum.photos/id/104/1920/1080',
-            'https://picsum.photos/id/106/1920/1080'
-        ].slice(0, count),
+        urls: ['https://picsum.photos/1920/1080'],
         source: '默认图库',
         isFallback: true 
-           };
-     }
+    };
+}
 
     function waitForSecretSection(callback, maxAttempts = 50) {
         let attempts = 0;
@@ -867,14 +1128,13 @@
 
         function renderSlider(urls) {
     slider.innerHTML = '';
-    
     urls.forEach((url, idx) => {
         const slideItem = document.createElement('div');
         slideItem.className = 'pixiv-slide-item';
         if (idx === 0) slideItem.classList.add('selected');
         
         const img = document.createElement('img');
-        img.src = url;  // 直接使用原始链接
+        img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
         img.alt = `图片${idx + 1}`;
         img.loading = 'lazy';
         
@@ -922,16 +1182,12 @@
 
     const originalUrl = fetchedUrls[selectedIndex];
     
-  
+    // 优化后的反代列表：按速度快慢排序
     const proxyList = [
-        'i.pixiv.re',
-        'pixiv.pics',
-        'i.pixiv.cat',
-        'pixiv.re'
+        'i.pixiv.re', 
     ];
     
     let proxyIndex = 0;
-    let loadAttempt = 0;
     const maxAttempts = proxyList.length;
 
     pixivBgImage.style.display = 'block';
@@ -939,26 +1195,35 @@
 
     function tryNextProxy() {
         if (proxyIndex >= maxAttempts) {
-            
-            statusDiv.innerHTML = '❌ 所有反代均失败，请检查网络或稍后重试';
-            restoreVideo();
+         
+            statusDiv.innerHTML = '⚠️ 所有代理失败，尝试直连...';
+            pixivBgImage.src = originalUrl;
+            pixivBgImage.onload = () => {
+                statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景（直连）`;
+                pixivBgImage.onerror = null;
+            };
+            pixivBgImage.onerror = () => {
+                statusDiv.innerHTML = '❌ 加载失败，请检查网络';
+                restoreVideo();
+            };
             return;
         }
 
         const proxy = proxyList[proxyIndex];
         const proxyUrl = originalUrl.replace(/\/\/[^\/]+/, '//' + proxy);
+        statusDiv.innerHTML = `⏳ 尝试代理 ${proxyIndex + 1}/${maxAttempts} (${proxy})...`;
         
-   
+        // 延长超时到 12 秒
         const timeoutId = setTimeout(() => {
             console.warn(`反代 ${proxy} 超时`);
             proxyIndex++;
             tryNextProxy();
-        }, 8000); // 8秒超时
+        }, 12000);
 
         pixivBgImage.onload = () => {
             clearTimeout(timeoutId);
-            statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景 (通过 ${proxy})`;
-            pixivBgImage.onerror = null; // 清除错误处理
+            statusDiv.innerHTML = `✅ 已设置第 ${selectedIndex + 1} 张图片为背景 (${proxy})`;
+            pixivBgImage.onerror = null;
         };
 
         pixivBgImage.onerror = () => {
@@ -967,12 +1232,12 @@
             proxyIndex++;
             tryNextProxy();
         };
-   
-             pixivBgImage.src = proxyUrl;
-          }    
 
-              tryNextProxy();
-       });
+        pixivBgImage.src = proxyUrl;
+    }
+
+    tryNextProxy();
+});
 
     }
 
@@ -1030,22 +1295,78 @@
     }
     
     function multiLanguageMatch(tags, searchKeyword) {
-        if (!searchKeyword || !tags || tags.length === 0) return false;
-        const lowerSearch = searchKeyword.toLowerCase();
+    if (!searchKeyword || !tags || tags.length === 0) return false;
+    const lowerSearch = searchKeyword.toLowerCase();
+    
+    
+    const keywords = lowerSearch.split(/[#,\s]+/).filter(k => k !== '');
+    if (keywords.length === 0) return false;
+    
+    
+    for (const kw of keywords) {
+        let matched = false;
+        
         for (const tag of tags) {
             const lowerTag = tag.toLowerCase();
-            if (lowerTag.includes(lowerSearch)) return true;
-            if (lowerSearch.includes(lowerTag)) return true;
-            if (searchKeywordToChineseMap[lowerSearch]) {
-                const targetTags = searchKeywordToChineseMap[lowerSearch];
-                for (const targetTag of targetTags) {
-                    if (lowerTag.includes(targetTag.toLowerCase()) || targetTag.toLowerCase().includes(lowerTag)) return true;
-                }
+            
+            // 1. 完全匹配或包含
+            if (lowerTag.includes(kw) || kw.includes(lowerTag)) {
+                matched = true;
+                break;
             }
-            if (lowerSearch.length === 1 && lowerTag.includes(lowerSearch)) return true;
+            
+            // 2. 多语言同义词匹配
+            if (searchKeywordToChineseMap[kw]) {
+                const targetTags = searchKeywordToChineseMap[kw];
+                for (const targetTag of targetTags) {
+                    if (lowerTag.includes(targetTag.toLowerCase()) || targetTag.toLowerCase().includes(lowerTag)) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (matched) break;
+            }
+            
+            // 3. 单字匹配（放宽条件）
+            if (kw.length === 1 && lowerTag.includes(kw)) {
+                matched = true;
+                break;
+            }
         }
-        return false;
+        
+        // 任一分词没匹配到，返回 false（所有分词都要能匹配）
+        if (!matched) return false;
     }
+    
+    return true;
+}
+
+function filterImagesBySearchQuery(searchText) {
+    if (!searchText || !searchText.trim()) return backupImageList;
+    
+    
+    const searchTags = searchText.split(/[#,\s]+/).map(t => t.trim().toLowerCase()).filter(t => t !== '');
+    
+ 
+    if (searchTags.length === 0) return backupImageList;
+    
+    return backupImageList.filter(image => {
+        const tags = image.tags || [];
+      
+        if (tags.length === 0) {
+            return searchTags.some(k => k === '视频') && image.isVideo;
+        }
+        
+       
+        return searchTags.some(searchTag => {
+           
+            for (const tag of tags) {
+                if (multiLanguageMatch([tag], searchTag)) return true;
+            }
+            return false;
+        });
+    });
+}
     
     let backupImageList = [];
     let lastFilteredImages = [];
@@ -1054,8 +1375,7 @@
     function loadBackupImages() {
         if (typeof IMAGE_LIST !== 'undefined' && Array.isArray(IMAGE_LIST)) {
             backupImageList = IMAGE_LIST.map(item => {
-                if (typeof item === 'string') return { url: item, tags: [], isVideo: false };
-                // 优先使用手动标记的 isVideo，再根据后缀判断
+                if (typeof item === 'string') return { url: item, tags: [], isVideo: false, layer2: null };
                 let isVideo = item.isVideo === true;
                 if (!isVideo && item.url) {
                     isVideo = item.url.endsWith('.mp4') || 
@@ -1063,7 +1383,7 @@
                               item.url.endsWith('.mov') ||
                               item.url.endsWith('.ogg');
                 }
-                return { url: item.url, tags: item.tags || [], isVideo: isVideo };
+                return { url: item.url, tags: item.tags || [], isVideo: isVideo, layer2: item.layer2 || null };
             });
             console.log(`✅ 已加载 ${backupImageList.length} 个媒体，其中视频: ${backupImageList.filter(i => i.isVideo).length} 个`);
         } else {
@@ -1087,16 +1407,12 @@
         try {
             const response = await fetch(url);
             const blob = await response.blob();
-            // 尝试检测视频类型
             let mimeType = 'video/mp4';
             const header = await blob.slice(0, 8).arrayBuffer();
             const bytes = new Uint8Array(header);
-            // MP4 文件头检测
             if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
                 mimeType = 'video/mp4';
-            }
-            // WebM 文件头检测
-            else if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
+            } else if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
                 mimeType = 'video/webm';
             }
             const videoBlob = new Blob([blob], { type: mimeType });
@@ -1104,10 +1420,8 @@
             videoElement.src = blobUrl;
             videoElement.load();
             await videoElement.play();
-            // 播放结束后释放 Blob URL
             videoElement.onended = () => URL.revokeObjectURL(blobUrl);
         } catch (e) {
-            console.warn('Blob 加载失败，尝试直接播放:', e);
             videoElement.src = url;
             videoElement.load();
             videoElement.play().catch(() => {});
@@ -1130,15 +1444,12 @@
         
         if (isVideo) {
             if (pixivBgImage) pixivBgImage.style.display = 'none';
-            
             async function playVideo(videoEl) {
                 videoEl.style.display = 'block';
                 await loadVideoWithBlob(selected.url, videoEl);
             }
-            
             if (desktopVideo) playVideo(desktopVideo);
             if (mobileVideo) playVideo(mobileVideo);
-            
             const hint = document.getElementById('bgHint');
             if (hint) hint.innerText = `🎬 视频 · ${selected.url.split('/').pop().slice(0, 30)}`;
         } else {
@@ -1156,61 +1467,6 @@
             if (hint) hint.innerText = `🖼️ ${selected.url.split('/').pop().slice(0, 30)} (${(selected.tags || []).slice(0, 3).join(', ')})`;
         }
         return true;
-    }
-    
-    function renderSlider(urls) {
-        const sliderContainer = document.getElementById('backupSliderContainer');
-        const slider = document.getElementById('backupSlider');
-        const indexIndicator = document.getElementById('backupIndexIndicator');
-        if (!sliderContainer || !slider) return;
-        if (!urls || urls.length === 0) {
-            sliderContainer.style.display = 'none';
-            return;
-        }
-        slider.innerHTML = '';
-        urls.forEach((item, idx) => {
-            const slideItem = document.createElement('div');
-            slideItem.className = 'backup-slide-item';
-            if (idx === selectedIndex) slideItem.classList.add('selected');
-            
-            const isVideo = item.isVideo === true;
-            
-            if (isVideo) {
-                const video = document.createElement('video');
-                video.src = item.url;
-                video.muted = true;
-                video.playsInline = true;
-                video.preload = 'metadata';
-                video.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
-                video.addEventListener('loadedmetadata', () => {
-                    video.currentTime = 1;
-                });
-                video.onerror = function() {
-                    this.style.display = 'none';
-                    const fallback = document.createElement('span');
-                    fallback.textContent = '🎬';
-                    fallback.style.cssText = 'width:150px;height:170px;display:flex;align-items:center;justify-content:center;background:#2a3a4a;border-radius:8px;font-size:24px;';
-                    slideItem.appendChild(fallback);
-                };
-                slideItem.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = item.url;
-                img.title = (item.tags || []).join(', ');
-                img.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
-                img.onerror = function() { 
-                    this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'170\'%3E%3Crect width=\'150\' height=\'170\' fill=\'%23333\'/%3E%3Ctext x=\'75\' y=\'90\' text-anchor=\'middle\' fill=\'%23fff\' font-size=\'14\'%3E错误%3C/text%3E%3C/svg%3E';
-                };
-                slideItem.appendChild(img);
-            }
-            
-            slideItem.addEventListener('click', () => updateSelection(idx));
-            slider.appendChild(slideItem);
-        });
-        if (indexIndicator) indexIndicator.textContent = `${selectedIndex + 1}/${urls.length}`;
-        sliderContainer.style.display = 'block';
-        const selectedItem = slider.children[selectedIndex];
-        if (selectedItem) selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
     
     function updateSelection(index) {
@@ -1232,6 +1488,82 @@
         if (indexIndicator) indexIndicator.textContent = `${index + 1}/${lastFilteredImages.length}`;
         const applyBtn = document.getElementById('backupApplyBtn');
         if (applyBtn) applyBtn.disabled = false;
+    }
+    
+    // ==================== 渲染滑块（纯原图，依赖 content-visibility 优化）====================
+    function renderSlider(urls) {
+        const sliderContainer = document.getElementById('backupSliderContainer');
+        const slider = document.getElementById('backupSlider');
+        const indexIndicator = document.getElementById('backupIndexIndicator');
+        if (!sliderContainer || !slider) return;
+        if (!urls || urls.length === 0) {
+            sliderContainer.style.display = 'none';
+            return;
+        }
+
+        const isMobile = /iPhone|iPad|Android|iPod/i.test(navigator.userAgent);
+        const fragment = document.createDocumentFragment();
+        
+        urls.forEach((item, idx) => {
+            const slideItem = document.createElement('div');
+            slideItem.className = 'backup-slide-item';
+            slideItem.style.position = 'relative';
+            if (idx === selectedIndex) slideItem.classList.add('selected');
+
+            const isVideo = item.isVideo === true;
+
+            if (isVideo) {
+                const video = document.createElement('video');
+                video.src = item.url;
+                video.muted = true;
+                video.loop = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.preload = 'metadata';
+                video.setAttribute('decoding', 'async');
+                video.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
+                video.play().catch(e => {});
+                slideItem.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = item.url;
+                img.title = (item.tags || []).join(', ');
+                img.loading = 'lazy';
+                img.decoding = 'async';
+                img.style.cssText = 'width:150px;height:170px;object-fit:cover;border-radius:8px;';
+                img.onerror = function() {
+                    this.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="170"><rect width="150" height="170" fill="#333"/><text x="75" y="90" text-anchor="middle" fill="#fff" font-size="14">错误</text></svg>');
+                };
+                slideItem.appendChild(img);
+
+                // 桌面端保留“双层”标签
+                if (item.layer2 && !isMobile) {
+                    const badge = document.createElement('span');
+                    badge.textContent = '双层';
+                    badge.style.cssText = `
+                        position: absolute; left: 4px; bottom: 4px;
+                        background: rgba(95, 158, 255, 0.9); color: #fff;
+                        font-size: 10px; padding: 2px 6px; border-radius: 10px;
+                        line-height: 1; z-index: 2; pointer-events: none;
+                    `;
+                    slideItem.appendChild(badge);
+                }
+            }
+
+            slideItem.addEventListener('click', () => updateSelection(idx));
+            fragment.appendChild(slideItem);
+        });
+
+        slider.innerHTML = '';
+        slider.appendChild(fragment);
+
+        if (indexIndicator) indexIndicator.textContent = `${selectedIndex + 1}/${urls.length}`;
+        sliderContainer.style.display = 'block';
+
+        const selectedEl = slider.children[selectedIndex];
+        if (selectedEl) {
+            selectedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
     }
     
     function searchAndDisplay() {
@@ -1274,7 +1606,7 @@
                     <button id="backupSearchBtn" class="light-btn small">🔍 搜索</button>
                 </div>
                 <div style="font-size:0.7rem; background:#0f1a24; padding:6px 10px; border-radius:20px; margin-bottom:12px;">
-                     想要多标签？加个#吧喵～
+                     想要多标签？加个空格吧喵～
                 </div>
                 <div id="backupSliderContainer" style="display:none;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -1289,6 +1621,9 @@
                             scroll-snap-align:center;
                             transition: all 0.2s;
                             cursor: pointer;
+                            contain: strict;
+                            content-visibility: auto;
+                            contain-intrinsic-size: 150px 170px;
                         }
                         .backup-slide-item.selected {
                             transform: scale(1.08);
@@ -1352,127 +1687,386 @@
 })();
 </script>
 
-<!-- 更新公告弹窗 -->
-<div id="updateModal" class="modal" style="display: none;">
-    <div class="modal-card" style="max-width: 500px; text-align: center;">
-        <h3>✨ 更新公告 ✨</h3>
-        <div id="updateContent" style="margin: 20px 0; text-align: left; max-height: 400px; overflow-y: auto; padding: 0 10px;">
-            <!-- 更新内容会动态插入这里 -->
-        </div>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px;">
-            <button id="closeUpdateBtn" class="action-btn" style="background: #5f9eff; border-color: #5f9eff;">知道了</button>
-        </div>
-        <div class="status-bar" style="margin-top: 12px;">
-            <span>当前网站不知道干什么可以联系给个建议</span>
-        </div>
-    </div>
-</div>
+
+
 
 <script>
 (function() {
     "use strict";
 
-    // ==================== 更新公告配置 ====================
-    // 每次更新时等于修改以下内容：
-    // 1. VERSION等于版本号（每次更新就一）
-    // 2. updateInfo等于更新内容
+    // 禁止右键等
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+
+    const LENS_RADIUS = 110;
+    const isMobile = /iPhone|iPad|Android|iPod/i.test(navigator.userAgent);
+    const MOBILE_MAX_SIZE = 800;
+
+    let xrayViewport = null;       
+    let xrayImg = null;           
+    let mobileLayer = null;       
+    let currentLayer2Url = null;
+    let currentMainSrc = '';
+    let longPressTimer = null;
+
+    // 节流
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 33;
+
+    function clearLongPressTimer() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
+
     
-    const VERSION = "0.0.0";  // 当前网站版本（每次更新记得改这里！）
-    
-    const updateInfo = `
-        <div style="line-height: 1.8;">
-            <p style="color: #5f9eff; font-weight: bold;">新版本 v${VERSION} 更新内容：</p>
-            <ul style="margin: 10px 0 10px 20px; padding-left: 0;">
-                <li>修复备用图库搜索</li>
-                <li>（修复了有时候搜索不了的问题）</li>
-                <li>给备用图库搜索添加了视频支持可以直接搜视频</li>
-                <li>优化多标签搜索（用 # 分隔）</li>
-                <li>优化移动端显示效果（主要是因为一些代码太占手机性能了)</li>
-            </ul>
-            <p style="color: #ccc; font-size: 0.85rem;">如果你遇到任何问题，欢迎反馈~</p>
-        </div>
-    `;
-    
-   
-    const STORAGE_KEY = "website_update_read_version";
-    
+    function getMainBgElement() {
+        const pixiv = document.getElementById('pixivBgImage');
+        if (pixiv && pixiv.style.display !== 'none' && pixiv.src &&
+            !pixiv.src.includes('null') && !pixiv.src.includes('undefined'))
+            return pixiv;
+        return null;
+    }
+
   
-    function getReadVersion() {
-        return localStorage.getItem(STORAGE_KEY) || "0";
-    }
-    
-    
-    function saveReadVersion(version) {
-        localStorage.setItem(STORAGE_KEY, version);
-    }
-    
-   
-    function showUpdateModal() {
-        const modal = document.getElementById('updateModal');
-        const contentDiv = document.getElementById('updateContent');
-        if (!modal || !contentDiv) return;
-        
-       
-        contentDiv.innerHTML = updateInfo;
-        
-       
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        
-        
-        const closeBtn = document.getElementById('closeUpdateBtn');
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
-                document.body.style.overflow = '';
-               
-                saveReadVersion(VERSION);
-            };
+    function getLayer2Url(src) {
+        if (!src || typeof IMAGE_LIST === 'undefined') return null;
+        for (let item of IMAGE_LIST) {
+            if (!item.layer2) continue;
+            if (src === item.url || src.split('/').pop() === item.url.split('/').pop())
+                return item.layer2;
         }
-        
-       
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = '';
-                saveReadVersion(VERSION);
+        return null;
+    }
+
+ 
+    async function downsampleImageSafe(url, maxSize) {
+        if (!isMobile) return url;
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const bitmap = await createImageBitmap(blob);
+            let w = bitmap.width, h = bitmap.height;
+            const scale = Math.min(maxSize / Math.max(w, h), 1);
+            if (scale >= 1) {
+                bitmap.close();
+                return URL.createObjectURL(blob);
             }
-        };
-    }
-    
-    
-    function checkForUpdate() {
-        const readVersion = getReadVersion();
-        
-        if (compareVersion(VERSION, readVersion) > 0) {
-            showUpdateModal();
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(bitmap, 0, 0, w, h);
+            bitmap.close();
+            const newBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.7));
+            return URL.createObjectURL(newBlob);
+        } catch (e) {
+            return url;
         }
     }
-    
+
    
-    function compareVersion(v1, v2) {
-        const parts1 = v1.split('.').map(Number);
-        const parts2 = v2.split('.').map(Number);
-        const maxLen = Math.max(parts1.length, parts2.length);
-        
-        for (let i = 0; i < maxLen; i++) {
-            const num1 = parts1[i] || 0;
-            const num2 = parts2[i] || 0;
-            if (num1 > num2) return 1;
-            if (num1 < num2) return -1;
+    function createXrayViewport() {
+        if (xrayViewport) return;
+        const size = LENS_RADIUS * 2;
+        xrayViewport = document.createElement('div');
+        xrayViewport.style.cssText = `
+            position: fixed; width: ${size}px; height: ${size}px;
+            border-radius: 50%; overflow: hidden; pointer-events: none;
+            z-index: 5; display: none;
+            box-shadow: 0 0 0 2px rgba(0,255,255,0.7), inset 0 0 15px rgba(0,255,255,0.3);
+            will-change: transform;
+        `;
+        xrayImg = document.createElement('img');
+        xrayImg.style.cssText = `
+            position: absolute; top: 0; left: 0;
+            width: 100vw; height: 100vh; object-fit: cover; pointer-events: none;
+        `;
+        xrayViewport.appendChild(xrayImg);
+        document.body.appendChild(xrayViewport);
+    }
+
+
+    function getMobileLayer() {
+        if (!mobileLayer) {
+            mobileLayer = document.createElement('img');
+            mobileLayer.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                object-fit: cover; z-index: 5; display: none; pointer-events: none;
+                -webkit-mask-image: none;
+                mask-image: none;
+                -webkit-mask-repeat: no-repeat;
+                mask-repeat: no-repeat;
+                will-change: mask-image;
+            `;
+            document.body.appendChild(mobileLayer);
         }
-        return 0;
+        return mobileLayer;
     }
-    
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', checkForUpdate);
-    } else {
-        checkForUpdate();
+
+    async function autoRefreshXray() {
+        const bg = getMainBgElement();
+        const currentSrc = bg ? bg.src : '';
+
+        if (currentSrc === currentMainSrc) return;
+
+        hideXrayAll();
+        if (currentLayer2Url && currentLayer2Url.startsWith('blob:')) {
+            URL.revokeObjectURL(currentLayer2Url);
+        }
+        currentMainSrc = currentSrc;
+        currentLayer2Url = null;
+
+        if (!bg) return;
+        const layer2 = getLayer2Url(currentSrc);
+        if (!layer2) return;
+
+        const finalUrl = await downsampleImageSafe(layer2, MOBILE_MAX_SIZE);
+        if (getMainBgElement()?.src !== currentSrc) {
+            if (finalUrl.startsWith('blob:')) URL.revokeObjectURL(finalUrl);
+            return;
+        }
+
+        currentLayer2Url = finalUrl;
+
+        if (!isMobile) {
+            createXrayViewport();
+            xrayImg.src = finalUrl;
+            xrayViewport.style.display = 'block';
+        } else {
+            getMobileLayer().src = finalUrl;
+        }
     }
+
+    
+    function setViewportPosition(x, y) {
+        if (!xrayViewport) return;
+        xrayViewport.style.transform = `translate(${x - LENS_RADIUS}px, ${y - LENS_RADIUS}px)`;
+    }
+
+    
+    function setMobileMask(x, y) {
+        if (!mobileLayer || mobileLayer.style.display === 'none') return;
+       
+        const now = Date.now();
+        if (now - lastUpdateTime < UPDATE_INTERVAL) return;
+        lastUpdateTime = now;
+
+        // 羽化 mask：圆心半径 110px，内部 60% 完全不透明，外侧渐变到透明
+        const mask = `radial-gradient(circle ${LENS_RADIUS}px at ${x}px ${y}px, 
+            black 60%, 
+            transparent 100%)`;
+        mobileLayer.style.webkitMaskImage = mask;
+        mobileLayer.style.maskImage = mask;
+    }
+
+    function hideXrayAll() {
+        if (xrayViewport) xrayViewport.style.display = 'none';
+        if (mobileLayer) {
+            mobileLayer.style.display = 'none';
+            mobileLayer.style.webkitMaskImage = 'none';
+            mobileLayer.style.maskImage = 'none';
+        }
+    }
+
+    
+    document.addEventListener('mousemove', e => {
+        if (isMobile) return;
+        if (!currentLayer2Url) return;
+        setViewportPosition(e.clientX, e.clientY);
+    }, { passive: true });
+    document.addEventListener('mouseleave', () => {
+        if (!isMobile) hideXrayAll();
+    });
+
+    
+    function isInteractiveElement(el) {
+        if (!el) return false;
+        if (el.closest('#lightSettingsBtn, #lightOverlay, #lightDrawer')) return true;
+        const tag = el.tagName.toLowerCase();
+        if (tag === 'button' || tag === 'a' || tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'label') return true;
+        if (el.getAttribute('role') === 'button') return true;
+        return el.closest('button, a, input, textarea, select, label, [role="button"]') !== null;
+    }
+
+    function onTouchStart(e) {
+        if (!isMobile) return;
+        if (isInteractiveElement(e.target)) {
+            clearLongPressTimer();
+            return;
+        }
+        if (!currentLayer2Url) {
+            clearLongPressTimer();
+            return;
+        }
+
+        const touch = e.touches[0];
+        clearLongPressTimer();
+        longPressTimer = setTimeout(() => {
+            if (!currentLayer2Url || getMainBgElement()?.src !== currentMainSrc) return;
+            const layer = getMobileLayer();
+            layer.style.display = 'block';
+            setMobileMask(touch.clientX, touch.clientY);
+            if (navigator.vibrate) navigator.vibrate(30);
+        }, 400);
+        e.preventDefault();
+    }
+
+    function onTouchMove(e) {
+        if (!isMobile) return;
+        const touch = e.touches[0];
+        if (touch && longPressTimer) {
+            clearLongPressTimer();
+        }
+        if (currentLayer2Url && mobileLayer && mobileLayer.style.display === 'block' && touch) {
+            setMobileMask(touch.clientX, touch.clientY);
+        }
+    }
+
+    function onTouchEnd() {
+        clearLongPressTimer();
+        if (mobileLayer && mobileLayer.style.display === 'block') {
+            mobileLayer.style.display = 'none';
+            mobileLayer.style.webkitMaskImage = 'none';
+            mobileLayer.style.maskImage = 'none';
+        }
+    }
+
+    document.addEventListener('touchstart', onTouchStart, { passive: false });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('touchcancel', onTouchEnd);
+
+    setInterval(autoRefreshXray, 800);
+    window.addEventListener('load', autoRefreshXray);
+    console.log('✅ Xray功能正常');
 })();
 </script>
 
 
+<style>
+  
+  @keyframes btnPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.85); }
+    100% { transform: scale(1); }
+  }
+  .acrylic-btn.pop {
+    animation: btnPop 0.3s ease;
+  }
+
+  
+  .modal.popup-anim {
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s ease;
+    background: rgba(0,0,0,0);        
+  }
+  .modal.popup-anim.show {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+    background: rgba(0,0,0,0.65);     
+    backdrop-filter: blur(12px);
+  }
+</style>
+
+<script>
+(function() {
+  const serverModal = document.getElementById('previewModal');
+  const qqModal = document.getElementById('qqModal');
+  const fixedIframe = document.getElementById('fixedIframe');
+  const FIXED_URL = 'https://qm.qq.com/q/R2nvpINxe2';
+  serverModal.classList.add('popup-anim');
+  qqModal.classList.add('popup-anim');
+  serverModal.classList.remove('show');
+  qqModal.classList.remove('show');
+  serverModal.style.display = 'none';
+  qqModal.style.display = 'none';
+
+  function setOriginFromButton(btn, modal) {
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    modal.style.transformOrigin = `${cx}px ${cy}px`;
+  }
+
+  function showModal(modal, originBtn) {
+    if (originBtn) setOriginFromButton(originBtn, modal);
+    modal.style.display = 'flex';
+    void modal.offsetWidth;          
+    modal.classList.add('show');
+  }
+
+  function hideModal(modal) {
+    modal.classList.remove('show');
+    // 过渡结束后再 display:none
+    modal.addEventListener('transitionend', function handler() {
+      if (!modal.classList.contains('show')) {
+        modal.style.display = 'none';
+      }
+      modal.removeEventListener('transitionend', handler);
+    }, { once: true });
+  }
+
+
+  const btn1 = document.getElementById('btn1');
+  if (btn1) {
+    const newBtn1 = btn1.cloneNode(true);
+    btn1.parentNode.replaceChild(newBtn1, btn1);
+    newBtn1.addEventListener('click', function() {
+      this.classList.add('pop');
+      setTimeout(() => this.classList.remove('pop'), 300);
+      hideModal(qqModal);
+      fixedIframe.src = FIXED_URL;
+      showModal(serverModal, this);
+    });
+  }
+
+  const btn3 = document.getElementById('btn3');
+  if (btn3) {
+    const newBtn3 = btn3.cloneNode(true);
+    btn3.parentNode.replaceChild(newBtn3, btn3);
+    newBtn3.addEventListener('click', function() {
+      this.classList.add('pop');
+      setTimeout(() => this.classList.remove('pop'), 300);
+      hideModal(serverModal);
+      showModal(qqModal, this);
+    });
+  }
+
+  
+  const closePreview = document.getElementById('closePreviewBtn');
+  if (closePreview) {
+    const newClose = closePreview.cloneNode(true);
+    closePreview.parentNode.replaceChild(newClose, closePreview);
+    newClose.addEventListener('click', () => hideModal(serverModal));
+  }
+  const closeQQ = document.getElementById('closeQQModalBtn');
+  if (closeQQ) {
+    const newCloseQQ = closeQQ.cloneNode(true);
+    closeQQ.parentNode.replaceChild(newCloseQQ, closeQQ);
+    newCloseQQ.addEventListener('click', () => hideModal(qqModal));
+  }
+
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      hideModal(serverModal);
+      hideModal(qqModal);
+    }
+  });
+})();
+</script>
+
+
+
+
+
 </body>
-</html>
+</html>
